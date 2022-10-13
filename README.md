@@ -1,1 +1,1 @@
-# Schist
+# SCS

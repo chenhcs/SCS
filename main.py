@@ -3,6 +3,7 @@ from src import preprocessing, transformer, postprocessing
 fw = open('data/Mouse_brain_Adult_GEM_bin1_sub.tsv', 'w')
 xmin = 3225
 ymin = 6175
+# Take one path from the whole section
 with open('data/Mouse_brain_Adult_GEM_bin1.tsv') as fr:
     header = fr.readline()
     fw.write(header)

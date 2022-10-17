@@ -12,7 +12,7 @@ The software has been tested on the CentOS Linux 7 system.
 - anndata 0.7.5</br>
 - numpy 1.22.4</br>
 - scanpy 1.8.2</br>
--
+- [Spateo](https://spateo-release.readthedocs.io/en/latest/installation.html)
 
 ## Usage
 To run SCS on one mouse adult brain section generated from the Stereo-seq platform, download the [Mouse_brain_Adult_GEM_bin1.tsv.gz](https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000058/Bin1_matrix/Mouse_brain_Adult_GEM_bin1.tsv.gz) file from the [MOSTA](https://db.cngb.org/stomics/mosta/download.html) data portal and save it to the data folder, then run the following command from the project home directory:

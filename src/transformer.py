@@ -54,7 +54,7 @@ class PatchEncoder(layers.Layer):
         encoded = self.projection(patch) + self.position_embedding(position)
         return encoded
 
-def create_vit_classifier():
+def create_vit_classifier(class_num, input_shape, input_position_shape, num_patches, projection_dim, num_heads, transformer_units, transformer_layers, mlp_head_units):
     inputs = layers.Input(shape=input_shape)
     inputs_positions = layers.Input(shape=input_position_shape)
     encoded_patches = PatchEncoder(num_patches, projection_dim)(inputs, inputs_positions)
@@ -86,7 +86,7 @@ def create_vit_classifier():
     model = keras.Model(inputs=[inputs, inputs_positions], outputs=[pos, binary])
     return model
 
-def run_experiment(model):
+def run_experiment(model, x_train, x_train_pos, y_train, y_binary_train, x_test, x_test_pos, x_validation, x_validation_pos, y_validation, y_binary_validation, learning_rate, weight_decay, batch_size, num_epochs):
     optimizer = tfa.optimizers.AdamW(
         learning_rate=learning_rate, weight_decay=weight_decay
     )
@@ -101,7 +101,7 @@ def run_experiment(model):
         },
     )
 
-    checkpoint_filepath = os.path.join('./ckpt', 'model_' + str(startx) + ':' + str(starty) + ':' + str(patchsize) + ':' + str(patchsize), 'ckpt')
+    checkpoint_filepath = os.path.join('./ckpt', 'model', 'ckpt')
     if not os.path.exists(checkpoint_filepath):
         os.makedirs(checkpoint_filepath)
     if len(x_validation[np.where(y_binary_validation == 1)]) < 100:
@@ -135,23 +135,23 @@ def run_experiment(model):
     )
 
     model.load_weights(checkpoint_filepath)
-    pred_centers_test, pred_binary_test = model.predict(x = [x_validate, x_validate_pos], batch_size=batch_size)
-    for i in range(len(x_validate_pos)):
-        print(x_validate_pos[i][0], pred_binary_test[i], pred_centers_test[i])
+    pred_centers_test, pred_binary_test = model.predict(x = [x_test, x_test_pos], batch_size=batch_size)
+    for i in range(len(x_test_pos)):
+        print(x_test_pos[i][0], pred_binary_test[i], pred_centers_test[i])
 
     pred_centers_train, pred_binary_train = model.predict(x = [x_train_, x_train_pos_], batch_size=batch_size)
     for i in range(len(y_train_)):
         print(y_train_[i], pred_binary_train[i], pred_centers_train[i])
     x_train_pos__ = np.load('data/x_train_pos.npz')
     x_train_pos__ = x_train_pos__['x_train_pos']
-    x_validate_pos_ = np.load('data/x_validate_pos.npz')
-    x_validate_pos_ = x_validate_pos_['x_validate_pos']
+    x_test_pos_ = np.load('data/x_test_pos.npz')
+    x_test_pos_ = x_test_pos_['x_test_pos']
     print(y_train_.shape, x_train_pos__.shape)
     with open('results/spot_prediction.txt', 'w') as fw:
         for i in range(len(y_train_)):
             fw.write(str(x_train_pos__[i][0][0]) + '\t' + str(x_train_pos__[i][0][1]) + '\t' + str(pred_binary_train[i][0]) + '\t' + ':'.join([str(c) for c in pred_centers_train[i]]) + '\n')
-        for i in range(len(x_validate_pos_)):
-            fw.write(str(x_validate_pos_[i][0][0]) + '\t' + str(x_validate_pos_[i][0][1]) + '\t' + str(pred_binary_test[i][0]) + '\t' + ':'.join([str(c) for c in pred_centers_test[i]]) + '\n')
+        for i in range(len(x_test_pos_)):
+            fw.write(str(x_test_pos_[i][0][0]) + '\t' + str(x_test_pos_[i][0][1]) + '\t' + str(pred_binary_test[i][0]) + '\t' + ':'.join([str(c) for c in pred_centers_test[i]]) + '\n')
 
     return
 
@@ -160,18 +160,18 @@ def train():
         os.mkdir('results/')
     except FileExistsError:
         print('results folder exists.')
-    x_train_ = np.load('../data/x_train.npz')
+    x_train_ = np.load('data/x_train.npz')
     x_train_ = x_train_['x_train'].astype(np.float32)
-    x_train_pos_ = np.load('../data/x_train_pos.npz')
+    x_train_pos_ = np.load('data/x_train_pos.npz')
     x_train_pos_ = x_train_pos_['x_train_pos'].astype(np.int32)
-    y_train_ = np.load('../data/y_train.npz')
+    y_train_ = np.load('data/y_train.npz')
     y_train_ = y_train_['y_train']
-    y_binary_train_ = np.load('../data/y_binary_train.npz')
+    y_binary_train_ = np.load('data/y_binary_train.npz')
     y_binary_train_ = y_binary_train_['y_binary_train'].astype(np.int32)
-    x_validate = np.load('../data/x_validate.npz')
-    x_validate = x_validate['x_validate'].astype(np.float32)
-    x_validate_pos = np.load('../data/x_validate_pos.npz')
-    x_validate_pos = x_validate_pos['x_validate_pos'].astype(np.int32)
+    x_test = np.load('data/x_test.npz')
+    x_test = x_test['x_test'].astype(np.float32)
+    x_test_pos = np.load('data/x_test_pos.npz')
+    x_test_pos = x_test_pos['x_test_pos'].astype(np.int32)
     class_num = 16
 
     x_train_select = []
@@ -193,10 +193,10 @@ def train():
         for j in range(1, len(x_train_pos_[i])):
             x_train_pos_[i][j] = x_train_pos_[i][j] - x_train_pos_[i][0]
         x_train_pos_[i][0] = x_train_pos_[i][0] - x_train_pos_[i][0]
-    for i in range(len(x_validate_pos)):
-        for j in range(1, len(x_validate_pos[i])):
-            x_validate_pos[i][j] = x_validate_pos[i][j] - x_validate_pos[i][0]
-        x_validate_pos[i][0] = x_validate_pos[i][0] - x_validate_pos[i][0]
+    for i in range(len(x_test_pos)):
+        for j in range(1, len(x_test_pos[i])):
+            x_test_pos[i][j] = x_test_pos[i][j] - x_test_pos[i][0]
+        x_test_pos[i][0] = x_test_pos[i][0] - x_test_pos[i][0]
 
     x_train = x_train_[x_train_select]
     x_train_pos = x_train_pos_[x_train_select]
@@ -214,7 +214,6 @@ def train():
     weight_decay = 0.0001
     batch_size = 10
     num_epochs = 100
-    patch_size = 1  # Size of the patches to be extract from the input images
     num_patches = x_train.shape[1]
     projection_dim = 64
     num_heads = 1
@@ -225,5 +224,5 @@ def train():
     transformer_layers = 8
     mlp_head_units = [1024, 256]  # Size of the dense layers of the final classifier
 
-    vit_classifier = create_vit_classifier()
-    run_experiment(vit_classifier)
+    vit_classifier = create_vit_classifier(class_num, input_shape, input_position_shape, num_patches, projection_dim, num_heads, transformer_units, transformer_layers, mlp_head_units)
+    run_experiment(vit_classifier, x_train, x_train_pos, y_train, y_binary_train, x_test, x_test_pos, x_validation, x_validation_pos, y_validation, y_binary_validation, learning_rate, weight_decay, batch_size, num_epochs)

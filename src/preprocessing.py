@@ -22,15 +22,26 @@ def preprocess(bin_file, image_file):
     before = adatasub.layers['stain'].copy()
     st.cs.refine_alignment(adatasub, mode='rigid', transform_layers=['stain'])
 
-    #nucleus segmentation from staining image
-    fig, ax = plt.subplots(figsize=(8, 8), tight_layout=True)
-    st.cs.mask_nuclei_from_stain(adatasub, otsu_classes = 4, otsu_index=1)
-    st.pl.imshow(adatasub, 'stain_mask', ax = ax)
+    fig, axes = plt.subplots(ncols=2, figsize=(16, 8), tight_layout=True)
+    axes[0].imshow(before)
+    st.pl.imshow(adatasub, 'unspliced', ax=axes[0], alpha=0.6, cmap='Reds', vmax=10, use_scale=False, save_show_or_return='return')
+    axes[0].set_title('before alignment')
+    st.pl.imshow(adatasub, 'stain', ax=axes[1], use_scale=False, save_show_or_return='return')
+    st.pl.imshow(adatasub, 'unspliced', ax=axes[1], alpha=0.6, cmap='Reds', vmax=10, use_scale=False, save_show_or_return='return')
+    axes[1].set_title('after alignment')
 
     try:
         os.mkdir('fig/')
     except FileExistsError:
         print('fig folder exists')
+
+    plt.savefig('fig/alignment.png')
+
+    #nucleus segmentation from staining image
+    fig, ax = plt.subplots(figsize=(8, 8), tight_layout=True)
+    st.cs.mask_nuclei_from_stain(adatasub, otsu_classes = 4, otsu_index=1)
+    st.pl.imshow(adatasub, 'stain_mask', ax = ax)
+
     plt.savefig('fig/stain_mask.png')
 
     st.cs.find_peaks_from_mask(adatasub, 'stain', 7)
@@ -98,14 +109,14 @@ def preprocess(bin_file, image_file):
                 genecnt += 1
 
     idx2exp = {}
-    down = 3
+    downrs = 3
     with open(bin_file) as fr:
         header = fr.readline()
         for line in fr:
             gene, x, y, count = line.split()
             if gene not in geneid:
                 continue
-            idx = int(math.floor((int(x) - xmin) / down) * math.ceil(patchsizey / down) + math.floor((int(y) - ymin) / down))
+            idx = int(math.floor((int(x) - xmin) / downrs) * math.ceil(patchsizey / downrs) + math.floor((int(y) - ymin) / downrs))
             if idx not in idx2exp:
                 idx2exp[idx] = {}
                 idx2exp[idx][geneid[gene]] = int(count)
@@ -114,7 +125,7 @@ def preprocess(bin_file, image_file):
             else:
                 idx2exp[idx][geneid[gene]] += int(count)
 
-    all_exp_merged_bins = lil_matrix((int(math.ceil(patchsizex / down) * math.ceil(patchsizey / down)), genecnt), dtype=np.int8)
+    all_exp_merged_bins = lil_matrix((int(math.ceil(patchsizex / downrs) * math.ceil(patchsizey / downrs)), genecnt), dtype=np.int8)
     for idx in idx2exp:
         for gid in idx2exp[idx]:
             all_exp_merged_bins[idx, gid] = idx2exp[idx][gid]
@@ -134,7 +145,7 @@ def preprocess(bin_file, image_file):
     #selected_index = geneidx[selected_index]
     print(selected_index, len(selected_index))
 
-    with open('../data/variable_genes.txt', 'w') as fw:
+    with open('data/variable_genes.txt', 'w') as fw:
         for id in selected_index:
             fw.write(id2gene[id] + '\n')
 
@@ -157,17 +168,11 @@ def preprocess(bin_file, image_file):
     x_validate_pos = []
     for i in range(adatasub.layers['watershed_labels'].shape[0]):
         for j in range(adatasub.layers['watershed_labels'].shape[1]):
-            if (not i % down == 0) or (not j % down == 0):
+            if (not i % downrs == 0) or (not j % downrs == 0):
                 continue
-            idx = int(math.floor(i / down) * math.ceil(patchsize / down) + math.floor(j / down))
+            idx = int(math.floor(i / downrs) * math.ceil(patchsizey / downrs) + math.floor(j / downrs))
             if adatasub.layers['watershed_labels'][i, j] > 0:
                 if idx >= 0 and idx < all_exp_merged_bins.shape[0] and np.sum(all_exp_merged_bins[idx, :]) > 0:
-                    adatasum = 0
-                    for r in range(i, i + down):
-                        for c in range(j, j + down):
-                            if r < adatasub.X.shape[0] and c < adatasub.X.shape[1]:
-                                adatasum += adatasub.X[r,c]
-                    print(np.sum(all_exp_merged_bins[idx, :]), adatasum)
                     x_train_sample = [all_exp_merged_bins[idx, :]]
                     x_train_pos_sample = [[i, j]]
                     y_train_sample = [watershed2center[adatasub.layers['watershed_labels'][i, j]]]
@@ -176,15 +181,15 @@ def preprocess(bin_file, image_file):
                             for dy in range(-45, 46):
                                 if len(x_train_sample) == 50:
                                     break
-                                if not ((np.abs(dx) == dis * down and np.abs(dy) <= dis * down) or (np.abs(dx) <= dis * down and np.abs(dy) == dis * down)):
+                                if not ((np.abs(dx) == dis * downrs and np.abs(dy) <= dis * downrs) or (np.abs(dx) <= dis * downrs and np.abs(dy) == dis * downrs)):
                                     continue
                                 x = i + dx
                                 y = j + dy
-                                if (not x % down == 0) or (not y % down == 0):
+                                if (not x % downrs == 0) or (not y % downrs == 0):
                                     continue
                                 if x < 0 or x >= adatasub.layers['watershed_labels'].shape[0] or y < 0 or y >= adatasub.layers['watershed_labels'].shape[1]:
                                     continue
-                                idx_nb = int(math.floor(x / down) * math.ceil(patchsize / down) + math.floor(y / down))
+                                idx_nb = int(math.floor(x / downrs) * math.ceil(patchsizey / downrs) + math.floor(y / downrs))
                                 if idx_nb >= 0 and idx_nb < all_exp_merged_bins.shape[0] and np.sum(all_exp_merged_bins[idx_nb, :]) > 0:
                                     x_train_sample.append(all_exp_merged_bins[idx_nb, :])
                                     x_train_pos_sample.append([x, y])
@@ -218,15 +223,15 @@ def preprocess(bin_file, image_file):
                                 for dy in range(-45, 46):
                                     if len(x_train_sample) == 50:
                                         break
-                                    if not ((np.abs(dx) == dis * down and np.abs(dy) <= dis * down) or (np.abs(dx) <= dis * down and np.abs(dy) == dis * down)):
+                                    if not ((np.abs(dx) == dis * downrs and np.abs(dy) <= dis * downrs) or (np.abs(dx) <= dis * downrs and np.abs(dy) == dis * downrs)):
                                         continue
                                     x = i + dx
                                     y = j + dy
-                                    if (not x % down == 0) or (not y % down == 0):
+                                    if (not x % downrs == 0) or (not y % downrs == 0):
                                         continue
                                     if x < 0 or x >= adatasub.layers['watershed_labels'].shape[0] or y < 0 or y >= adatasub.layers['watershed_labels'].shape[1]:
                                         continue
-                                    idx_nb = int(math.floor(x / down) * math.ceil(patchsize / down) + math.floor(y / down))
+                                    idx_nb = int(math.floor(x / downrs) * math.ceil(patchsizey / downrs) + math.floor(y / downrs))
                                     if idx_nb >= 0 and idx_nb < all_exp_merged_bins.shape[0] and np.sum(all_exp_merged_bins[idx_nb, :]) > 0:
                                         x_train_sample.append(all_exp_merged_bins[idx_nb, :])
                                         x_train_pos_sample.append([x, y])
@@ -249,16 +254,16 @@ def preprocess(bin_file, image_file):
                                 for dy in range(-45, 46):
                                     if len(x_validate_sample) == 50:
                                         break
-                                    if not ((np.abs(dx) == dis * down and np.abs(dy) <= dis * down) or (np.abs(dx) <= dis * down and np.abs(dy) == dis * down)):
+                                    if not ((np.abs(dx) == dis * downrs and np.abs(dy) <= dis * downrs) or (np.abs(dx) <= dis * downrs and np.abs(dy) == dis * downrs)):
                                         continue
                                     x = i + dx
                                     y = j + dy
-                                    if (not x % down == 0) or (not y % down == 0):
+                                    if (not x % downrs == 0) or (not y % downrs == 0):
                                         continue
                                     exp_merge = np.zeros(len(selected_index))
                                     if x < 0 or x >= adatasub.layers['watershed_labels'].shape[0] or y < 0 or y >= adatasub.layers['watershed_labels'].shape[1]:
                                         continue
-                                    idx_nb = int(math.floor(x / down) * math.ceil(patchsize / down) + math.floor(y / down))
+                                    idx_nb = int(math.floor(x / downrs) * math.ceil(patchsizey / downrs) + math.floor(y / downrs))
                                     if idx_nb >= 0 and idx_nb < all_exp_merged_bins.shape[0] and np.sum(all_exp_merged_bins[idx_nb, :]) > 0:
                                         x_validate_sample.append(all_exp_merged_bins[idx_nb, :])
                                         x_validate_pos_sample.append([x, y])
@@ -295,9 +300,9 @@ def preprocess(bin_file, image_file):
     x_validate_pos = np.array(x_validate_pos)
     print(x_validate.shape, x_validate_pos.shape)
 
-    np.savez_compressed('../data/x_train.npz', x_train=x_train)
-    np.savez_compressed('../data/x_train_pos.npz', x_train_pos=x_train_pos)
-    np.savez_compressed('../data/y_train.npz', y_train=y_train)
-    np.savez_compressed('../data/y_binary_train.npz', y_binary_train=y_binary_train)
-    np.savez_compressed('../data/x_validate_brain.npz', x_validate=x_validate)
-    np.savez_compressed('../data/x_validate_pos.npz', x_validate_pos=x_validate_pos)
+    np.savez_compressed('data/x_train.npz', x_train=x_train)
+    np.savez_compressed('data/x_train_pos.npz', x_train_pos=x_train_pos)
+    np.savez_compressed('data/y_train.npz', y_train=y_train)
+    np.savez_compressed('data/y_binary_train.npz', y_binary_train=y_binary_train)
+    np.savez_compressed('data/x_validate.npz', x_validate=x_validate)
+    np.savez_compressed('data/x_validate_pos.npz', x_validate_pos=x_validate_pos)

@@ -440,7 +440,7 @@ def postprocess():
                             break
 
     fig, ax = plt.subplots(figsize=(32, 32), tight_layout=True)
-    fw = open('results/bin2cell.txt', 'w')
+    fw = open('results/spot2cell.txt', 'w')
     for i in range(merged.shape[0]):
         for j in range(merged.shape[1]):
             if merged[i, j] > 0:

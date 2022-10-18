@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from scipy.stats import multivariate_normal
 
 def read_gradient(file, adata, patch_size):
+    cell_diameter = 15
+
     watershed2x = {}
     watershed2y = {}
     for i in range(adata.layers['watershed_labels'].shape[0]):
@@ -24,8 +26,8 @@ def read_gradient(file, adata, patch_size):
     for nucleus in watershed2x:
         watershed2center[nucleus] = [np.mean(watershed2x[nucleus]), np.mean(watershed2y[nucleus])]
         sizes.append(len(watershed2x[nucleus]))
-    print(np.min(sizes), np.max(sizes), np.mean(sizes))
-    print('#nucleus', len(watershed2center))
+    #print(np.min(sizes), np.max(sizes), np.mean(sizes))
+    #print('#nucleus', len(watershed2center))
 
     class2dir = class_to_gradient()
     intensity = np.zeros(patch_size)
@@ -37,7 +39,7 @@ def read_gradient(file, adata, patch_size):
     pred_C = np.zeros(patch_size)
     with open(file) as fr:
         for line in fr:
-            x, y, b, class_logit, part = line.split()
+            x, y, b, class_logit = line.split()
             class_prior = np.zeros(class_num)
             class_prior_ext = np.zeros(class_num)
             for center in watershed2center:
@@ -54,14 +56,14 @@ def read_gradient(file, adata, patch_size):
             else:
                 class_prior = class_prior / np.sum(class_prior)
             class_prior = class_prior / np.sum(class_prior)
-            print(class_prior)
+            #print(class_prior)
             class_logit = [float(logit) for logit in class_logit.split(":")]
             class_p = np.exp(class_logit) / sum(np.exp(class_logit))
-            print('class_p_ori', class_p)
+            #print('class_p_ori', class_p)
             for k in range(class_num):
                 class_p[k] = class_p[k] / class_prior_ori[k] * class_prior[k]
             class_p = class_p / np.sum(class_p)
-            print('class_p', class_p)
+            #print('class_p', class_p)
             cla = np.argmax(class_p)
             cx, cy = class2dir[cla]
             dx[int(x), int(y)] = cx
@@ -226,7 +228,7 @@ def gvf_tracking(dx, dy, intensity, K=50, Diffusions=10, Mu=5, Lambda=5, Iterati
                     # copy and reallocate
                     temp = Trajectory
                     Trajectory = np.zeros((K*(alloc + 1), 2))
-                    Trajectory[K*(alloc-1):K*alloc, ] = temp
+                    Trajectory[:K*alloc, ] = temp
                     alloc += 1
 
                     # add new point
@@ -241,21 +243,21 @@ def gvf_tracking(dx, dy, intensity, K=50, Diffusions=10, Mu=5, Lambda=5, Iterati
             if Mapped[int(Trajectory[points, 0]), int(Trajectory[points, 1])] == 1:
                 novel = 0
                 cosphi = -1
-                print('Mapped', cosphi)
+                #print('Mapped', cosphi)
             elif Mask[int(Trajectory[points, 0]), int(Trajectory[points, 1])] == 0:
                 cosphi = -1
-                print('Mask', cosphi)
+                #print('Mask', cosphi)
             else:
                 cosphi = dy[int(Trajectory[points-1, 0]), int(Trajectory[points-1, 1])] * dy[int(Trajectory[points, 0]), int(Trajectory[points, 1])] + dx[int(Trajectory[points-1, 0]), int(Trajectory[points-1, 1])] * dx[int(Trajectory[points, 0]), int(Trajectory[points, 1])]
-                print('Continue', cosphi, len(Trajectory), points, x, y)
+                #print('Continue', cosphi, len(Trajectory), points, x, y)
 
             # increment trajectory length counter
             points += 1
 
         # determine if sink is novel
-        print((x, y))
-        print(Trajectory)
-        print(novel)
+        #print((x, y))
+        #print(Trajectory)
+        #print(novel)
         if novel == 1:
 
             # record sinks
@@ -280,7 +282,7 @@ def gvf_tracking(dx, dy, intensity, K=50, Diffusions=10, Mu=5, Lambda=5, Iterati
     Segmentation_new = np.zeros(Segmentation.shape)
     for i, (x,y) in enumerate(Sinks):
         idx = np.where(Segmentation == i + 1)
-        print(idx, len(idx[0]))
+        #print(idx, len(idx[0]))
         if len(idx[0]) <= 3:
             Segmentation[idx] = 0
         else:
@@ -290,7 +292,7 @@ def gvf_tracking(dx, dy, intensity, K=50, Diffusions=10, Mu=5, Lambda=5, Iterati
 
     return Segmentation_new, Sinks, dx, dy, Mask
 
-def merge_sinks(Label, Sinks, Radius=3.5):
+def merge_sinks(Label, Sinks, downrs, Radius=3.5):
     import skimage.morphology as mp
     from skimage import measure as ms
 
@@ -304,10 +306,10 @@ def merge_sinks(Label, Sinks, Radius=3.5):
 
     # generate new labels for merged seeds, define memberships
     Labels = ms.label(Dilated)
-    print(Labels, np.max(Labels))
+    #print(Labels, np.max(Labels))
     New = Labels[Sinks[:, 0].astype(np.int), Sinks[:, 1].astype(np.int)]
     New = New + 1
-    print('New', list(New), New.shape)
+    #print('New', list(New), New.shape)
 
     # get unique list of seed clusters
     Unique = np.arange(1, New.max()+1)
@@ -328,18 +330,18 @@ def merge_sinks(Label, Sinks, Radius=3.5):
 
     filled = 1
     while(filled > 0):
-        Merged, filled = fill_holes(Merged, int(down))
+        Merged, filled = fill_holes(Merged, int(downrs))
 
     return Merged
 
-def fill_holes(label_mat, down):
+def fill_holes(label_mat, downrs):
     filled = 0
     label_mat_new = label_mat.copy()
     for i in range(label_mat.shape[0]):
         for j in range(label_mat.shape[0]):
-            if i % down == 0 and j % down == 0 and label_mat[i, j] == 0:
+            if i % downrs == 0 and j % downrs == 0 and label_mat[i, j] == 0:
                 neighbor_labels = []
-                for d in [[-down, -down], [-down, 0], [-down, down], [down, -down], [down, 0], [down, down], [0, -down], [0, down]]:
+                for d in [[-downrs, -downrs], [-downrs, 0], [-downrs, downrs], [downrs, -downrs], [downrs, 0], [downrs, downrs], [0, -downrs], [0, downrs]]:
                     if i + d[0] >= 0 and i + d[0] < label_mat.shape[0] and j + d[1] >= 0 and j + d[1] < label_mat.shape[1]:
                         if label_mat[i + d[0], j + d[1]] > 0:
                             neighbor_labels.append(label_mat[i + d[0], j + d[1]])
@@ -400,12 +402,18 @@ def round_float(x):
         return -t
 
 def postprocess():
-    adata = ad.read_h5ad('../data/spots.h5ad')
+    downrs = 3
+    adata = ad.read_h5ad('data/spots.h5ad')
+    patchsizex = adata.X.shape[0]
+    patchsizey = adata.X.shape[1]
 
-    intensity, dx, dy, pred_U, pred_V, pred_C = read_gradient('../results/spot_prediction.txt', adata, (int(patchsize), int(patchsize)))
+    print('Adjust spot prediction priors...')
+    intensity, dx, dy, pred_U, pred_V, pred_C = read_gradient('results/spot_prediction.txt', adata, (int(patchsizex), int(patchsizey)))
+    print('Gradient flow tracking...')
     Segmentation, Sinks, dx, dy, mask = gvf_tracking(dx, dy, intensity)
-    print('Sinks', Sinks, len(Sinks))
-    merged = merge_sinks(Segmentation, Sinks)
+    #print('Sinks', Sinks, len(Sinks))
+    print('Merge basins...')
+    merged = merge_sinks(Segmentation, Sinks, downrs)
     sink_map = np.zeros(Segmentation.shape)
     for i, (x,y) in enumerate(Sinks):
         sink_map[int(x), int(y)] = i + 1
@@ -414,9 +422,9 @@ def postprocess():
     for i in range(merged.shape[0]):
         for j in range(merged.shape[1]):
             if merged[i, j] > 0 and expand[i, j] == 0:
-                for m in range(int(down)):
-                    for n in range(int(down)):
-                        if i + m < int(patchsize) and j + n < int(patchsize):
+                for m in range(int(downrs)):
+                    for n in range(int(downrs)):
+                        if i + m < int(patchsizex) and j + n < int(patchsizey):
                             merged[i + m, j + n] = merged[i, j]
                             expand[i + m, j + n] = 1
     merged = remove_small_cells(merged)
@@ -432,11 +440,11 @@ def postprocess():
                             break
 
     fig, ax = plt.subplots(figsize=(32, 32), tight_layout=True)
-    fw = open('../results/bin2cell.txt', 'w')
-    for i in range(merged_cp.shape[0]):
-        for j in range(merged_cp.shape[1]):
-            if merged_cp[i, j] > 0:
-                fw.write(str(i) + ':' + str(j) + '\t' + str(merged_cp[i, j]) + '\n')
+    fw = open('results/bin2cell.txt', 'w')
+    for i in range(merged.shape[0]):
+        for j in range(merged.shape[1]):
+            if merged[i, j] > 0:
+                fw.write(str(i) + ':' + str(j) + '\t' + str(merged[i, j]) + '\n')
     fw.close()
 
     idx = np.where(merged == 0)
@@ -445,4 +453,4 @@ def postprocess():
     plt.imshow(merged, alpha=0.6, cmap='tab10')
     plt.imshow(edges, alpha=0.2, cmap='Greys')
     q = ax.quiver(dy * mask * 10, - dx * mask * 10, intensity, scale=5, width=0.2, units='x')
-    plt.savefig('../results/cell_masks.png')
+    plt.savefig('results/cell_masks.png')

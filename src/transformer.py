@@ -86,7 +86,7 @@ def create_vit_classifier(class_num, input_shape, input_position_shape, num_patc
     model = keras.Model(inputs=[inputs, inputs_positions], outputs=[pos, binary])
     return model
 
-def run_experiment(model, x_train, x_train_pos, y_train, y_binary_train, x_test, x_test_pos, x_validation, x_validation_pos, y_validation, y_binary_validation, learning_rate, weight_decay, batch_size, num_epochs):
+def run_experiment(model, x_train, x_train_pos, x_train_, x_train_pos_, y_train, y_train_, y_binary_train, x_test, x_test_pos, x_validation, x_validation_pos, y_validation, y_binary_validation, learning_rate, weight_decay, batch_size, num_epochs):
     optimizer = tfa.optimizers.AdamW(
         learning_rate=learning_rate, weight_decay=weight_decay
     )
@@ -119,11 +119,11 @@ def run_experiment(model, x_train, x_train_pos, y_train, y_binary_train, x_test,
             save_weights_only=True,
         )
 
-    print(x_train)
-    print(x_train_pos)
-    print(y_train)
-    print(y_binary_train)
-    print(len(x_validation[np.where(y_binary_validation == 1)]))
+    #print(x_train)
+    #print(x_train_pos)
+    #print(y_train)
+    #print(y_binary_train)
+    #print(len(x_validation[np.where(y_binary_validation == 1)]))
     model.fit(
         x=[x_train, x_train_pos],
         y=[y_train, y_binary_train],
@@ -134,19 +134,22 @@ def run_experiment(model, x_train, x_train_pos, y_train, y_binary_train, x_test,
         callbacks=[checkpoint_callback],
     )
 
+    print('Inference on all the spots...')
     model.load_weights(checkpoint_filepath)
     pred_centers_test, pred_binary_test = model.predict(x = [x_test, x_test_pos], batch_size=batch_size)
-    for i in range(len(x_test_pos)):
-        print(x_test_pos[i][0], pred_binary_test[i], pred_centers_test[i])
+    #for i in range(len(x_test_pos)):
+    #    print(x_test_pos[i][0], pred_binary_test[i], pred_centers_test[i])
 
     pred_centers_train, pred_binary_train = model.predict(x = [x_train_, x_train_pos_], batch_size=batch_size)
-    for i in range(len(y_train_)):
-        print(y_train_[i], pred_binary_train[i], pred_centers_train[i])
+    #for i in range(len(y_train_)):
+    #    print(y_train_[i], pred_binary_train[i], pred_centers_train[i])
     x_train_pos__ = np.load('data/x_train_pos.npz')
     x_train_pos__ = x_train_pos__['x_train_pos']
     x_test_pos_ = np.load('data/x_test_pos.npz')
     x_test_pos_ = x_test_pos_['x_test_pos']
-    print(y_train_.shape, x_train_pos__.shape)
+    #print(y_train_.shape, x_train_pos__.shape)
+
+    print('Write prediction results...')
     with open('results/spot_prediction.txt', 'w') as fw:
         for i in range(len(y_train_)):
             fw.write(str(x_train_pos__[i][0][0]) + '\t' + str(x_train_pos__[i][0][1]) + '\t' + str(pred_binary_train[i][0]) + '\t' + ':'.join([str(c) for c in pred_centers_train[i]]) + '\n')
@@ -225,4 +228,4 @@ def train():
     mlp_head_units = [1024, 256]  # Size of the dense layers of the final classifier
 
     vit_classifier = create_vit_classifier(class_num, input_shape, input_position_shape, num_patches, projection_dim, num_heads, transformer_units, transformer_layers, mlp_head_units)
-    run_experiment(vit_classifier, x_train, x_train_pos, y_train, y_binary_train, x_test, x_test_pos, x_validation, x_validation_pos, y_validation, y_binary_validation, learning_rate, weight_decay, batch_size, num_epochs)
+    run_experiment(vit_classifier, x_train, x_train_pos, x_train_, x_train_pos_, y_train, y_train_, y_binary_train, x_test, x_test_pos, x_validation, x_validation_pos, y_validation, y_binary_validation, learning_rate, weight_decay, batch_size, num_epochs)

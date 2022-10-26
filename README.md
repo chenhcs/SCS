@@ -21,13 +21,15 @@ The software has been tested on the CentOS Linux 7 system.
 - tensorflow_addons 0.16.1</br>
 
 ## Usage
-To run SCS on one mouse adult brain section generated from the Stereo-seq platform, download the [Mouse_brain_Adult_GEM_bin1.tsv.gz](https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000058/Bin1_matrix/Mouse_brain_Adult_GEM_bin1.tsv.gz) file from the [MOSTA](https://db.cngb.org/stomics/mosta/download.html) data portal and save it to the data folder, then run the following command from the project home directory:
+This section describes how to use SCS to perform cell segmentation on the high-resolution spatial transcriptomics data.
+
+An example is provided for one mouse adult brain section generated from the Stereo-seq platform. To run the example, download the [Mouse_brain_Adult_GEM_bin1.tsv.gz](https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000058/Bin1_matrix/Mouse_brain_Adult_GEM_bin1.tsv.gz) file from the [MOSTA](https://db.cngb.org/stomics/mosta/download.html) data portal and save it to the `data` folder, the corresponding staining image data is already in the folder. Then run the following command from the project home directory:
 ```
 python main.py
 ```
 
 ## Output
-Results will be saved to results directory.
+Results will be saved to `results` directory.
 
 The output file `stain_mask.png` visualizes cell boundaries in the sequencing section.
 

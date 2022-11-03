@@ -54,7 +54,7 @@ class PatchEncoder(layers.Layer):
         encoded = self.projection(patch) + self.position_embedding(position)
         return encoded
 
-def create_vit_classifier(class_num, input_shape, input_position_shape, num_patches, projection_dim, num_heads, transformer_units, transformer_layers, mlp_head_units):
+def create_transformer_classifier(class_num, input_shape, input_position_shape, num_patches, projection_dim, num_heads, transformer_units, transformer_layers, mlp_head_units):
     inputs = layers.Input(shape=input_shape)
     inputs_positions = layers.Input(shape=input_position_shape)
     encoded_patches = PatchEncoder(num_patches, projection_dim)(inputs, inputs_positions)
@@ -227,5 +227,5 @@ def train():
     transformer_layers = 8
     mlp_head_units = [1024, 256]  # Size of the dense layers of the final classifier
 
-    vit_classifier = create_vit_classifier(class_num, input_shape, input_position_shape, num_patches, projection_dim, num_heads, transformer_units, transformer_layers, mlp_head_units)
-    run_experiment(vit_classifier, x_train, x_train_pos, x_train_, x_train_pos_, y_train, y_train_, y_binary_train, x_test, x_test_pos, x_validation, x_validation_pos, y_validation, y_binary_validation, learning_rate, weight_decay, batch_size, num_epochs)
+    transformer_classifier = create_transformer_classifier(class_num, input_shape, input_position_shape, num_patches, projection_dim, num_heads, transformer_units, transformer_layers, mlp_head_units)
+    run_experiment(transformer_classifier, x_train, x_train_pos, x_train_, x_train_pos_, y_train, y_train_, y_binary_train, x_test, x_test_pos, x_validation, x_validation_pos, y_validation, y_binary_validation, learning_rate, weight_decay, batch_size, num_epochs)

@@ -23,12 +23,12 @@ The software has been tested on the CentOS Linux 7 system.
 ## Usage
 This section describes how to use SCS to perform cell segmentation on the high-resolution spatial transcriptomics data.
 
-An example is provided for one mouse adult brain section generated from the Stereo-seq platform. To run the example, download the [Mouse_brain_Adult_GEM_bin1.tsv.gz](https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000058/Bin1_matrix/Mouse_brain_Adult_GEM_bin1.tsv.gz) file from the [MOSTA](https://db.cngb.org/stomics/mosta/download.html) data portal and save it to the `data` folder, the corresponding staining image data is already in the folder. Then run the following command from the project home directory:
+An example is provided for one mouse adult brain section generated from the Stereo-seq platform. To run the example, download the [Mouse_brain_Adult_GEM_bin1.tsv.gz](https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000058/Bin1_matrix/Mouse_brain_Adult_GEM_bin1.tsv.gz) file from the [MOSTA](https://db.cngb.org/stomics/mosta/download.html) data portal and save it to the `data` folder, the corresponding staining image data is already in the folder. Then run the following script from the project home directory:
 ```
 python main.py
 ```
 
-The script run three steps to segment the provided patch: (i) preprocessing, i.e., identifying nuclei and preparing data for the transformer, (ii) training the transformer and inference on all the spots in the patch, (iii), postprocessing, i.e., gradient flow tracking. The preprocessing time on the demo patch will be about 10 minutes, transformer training will take roughly 1.5 hour with an Nvidia GeForce 10 series graphics card, and the postprocessing will take about 5 minutes.
+The script run three steps to segment the provided patch: (i) preprocessing, {\it i.e.}, identifying nuclei and preparing data for the transformer, (ii) training the transformer and inference on all the spots in the patch, (iii), postprocessing, {\it i.e.}, gradient flow tracking. The preprocessing time on the demo patch will be about 10 minutes, transformer training will take roughly 1.5 hour with an Nvidia GeForce 10 series graphics card, and the postprocessing will take about 5 minutes.
 
 ## Output
 Results will be saved to `results` directory.

@@ -166,7 +166,19 @@ def preprocess(bin_file, image_file):
     x_test_tmp = []
     x_test= []
     x_test_pos = []
+    offsets = []
+    for dis in range(1, 11):
+        for dy in range(-dis, dis + 1):
+            offsets.append([-dis * downrs, dy * downrs])
+        for dy in range(-dis, dis + 1):
+            offsets.append([dis * downrs, dy * downrs])
+        for dx in range(-dis + 1, dis):
+            offsets.append([dx * downrs, -dis * downrs])
+        for dx in range(-dis + 1, dis):
+            offsets.append([dx * downrs, dis * downrs])
     for i in range(adatasub.layers['watershed_labels'].shape[0]):
+        if (i + 1) % 100 == 0:
+            print("finished {0:.0%}".format(i / adatasub.layers['watershed_labels'].shape[0]))
         for j in range(adatasub.layers['watershed_labels'].shape[1]):
             if (not i % downrs == 0) or (not j % downrs == 0):
                 continue
@@ -176,23 +188,17 @@ def preprocess(bin_file, image_file):
                     x_train_sample = [all_exp_merged_bins[idx, :]]
                     x_train_pos_sample = [[i, j]]
                     y_train_sample = [watershed2center[adatasub.layers['watershed_labels'][i, j]]]
-                    for dis in range(1, 11):
-                        for dx in range(-45, 46):
-                            for dy in range(-45, 46):
-                                if len(x_train_sample) == 50:
-                                    break
-                                if not ((np.abs(dx) == dis * downrs and np.abs(dy) <= dis * downrs) or (np.abs(dx) <= dis * downrs and np.abs(dy) == dis * downrs)):
-                                    continue
-                                x = i + dx
-                                y = j + dy
-                                if (not x % downrs == 0) or (not y % downrs == 0):
-                                    continue
-                                if x < 0 or x >= adatasub.layers['watershed_labels'].shape[0] or y < 0 or y >= adatasub.layers['watershed_labels'].shape[1]:
-                                    continue
-                                idx_nb = int(math.floor(x / downrs) * math.ceil(patchsizey / downrs) + math.floor(y / downrs))
-                                if idx_nb >= 0 and idx_nb < all_exp_merged_bins.shape[0] and np.sum(all_exp_merged_bins[idx_nb, :]) > 0:
-                                    x_train_sample.append(all_exp_merged_bins[idx_nb, :])
-                                    x_train_pos_sample.append([x, y])
+                    for dx, dy in offsets:
+                        if len(x_train_sample) == 50:
+                            break
+                        x = i + dx
+                        y = j + dy
+                        if x < 0 or x >= adatasub.layers['watershed_labels'].shape[0] or y < 0 or y >= adatasub.layers['watershed_labels'].shape[1]:
+                            continue
+                        idx_nb = int(math.floor(x / downrs) * math.ceil(patchsizey / downrs) + math.floor(y / downrs))
+                        if idx_nb >= 0 and idx_nb < all_exp_merged_bins.shape[0] and np.sum(all_exp_merged_bins[idx_nb, :]) > 0:
+                            x_train_sample.append(all_exp_merged_bins[idx_nb, :])
+                            x_train_pos_sample.append([x, y])
                     if len(x_train_sample) < 50:
                         continue
                     x_train_tmp.append(x_train_sample)
@@ -218,23 +224,17 @@ def preprocess(bin_file, image_file):
                         x_train_sample = [all_exp_merged_bins[idx, :]]
                         x_train_pos_sample = [[i, j]]
                         y_train_sample = [[-1, -1]]
-                        for dis in range(1, 11):
-                            for dx in range(-45, 46):
-                                for dy in range(-45, 46):
-                                    if len(x_train_sample) == 50:
-                                        break
-                                    if not ((np.abs(dx) == dis * downrs and np.abs(dy) <= dis * downrs) or (np.abs(dx) <= dis * downrs and np.abs(dy) == dis * downrs)):
-                                        continue
-                                    x = i + dx
-                                    y = j + dy
-                                    if (not x % downrs == 0) or (not y % downrs == 0):
-                                        continue
-                                    if x < 0 or x >= adatasub.layers['watershed_labels'].shape[0] or y < 0 or y >= adatasub.layers['watershed_labels'].shape[1]:
-                                        continue
-                                    idx_nb = int(math.floor(x / downrs) * math.ceil(patchsizey / downrs) + math.floor(y / downrs))
-                                    if idx_nb >= 0 and idx_nb < all_exp_merged_bins.shape[0] and np.sum(all_exp_merged_bins[idx_nb, :]) > 0:
-                                        x_train_sample.append(all_exp_merged_bins[idx_nb, :])
-                                        x_train_pos_sample.append([x, y])
+                        for dx, dy in offsets:
+                            if len(x_train_sample) == 50:
+                                break
+                            x = i + dx
+                            y = j + dy
+                            if x < 0 or x >= adatasub.layers['watershed_labels'].shape[0] or y < 0 or y >= adatasub.layers['watershed_labels'].shape[1]:
+                                continue
+                            idx_nb = int(math.floor(x / downrs) * math.ceil(patchsizey / downrs) + math.floor(y / downrs))
+                            if idx_nb >= 0 and idx_nb < all_exp_merged_bins.shape[0] and np.sum(all_exp_merged_bins[idx_nb, :]) > 0:
+                                x_train_sample.append(all_exp_merged_bins[idx_nb, :])
+                                x_train_pos_sample.append([x, y])
                         if len(x_train_sample) < 50:
                             continue
                         x_train_bg_tmp.append(x_train_sample)
@@ -249,24 +249,18 @@ def preprocess(bin_file, image_file):
                     else:
                         x_test_sample = [all_exp_merged_bins[idx, :]]
                         x_test_pos_sample = [[i, j]]
-                        for dis in range(1, 11):
-                            for dx in range(-45, 46):
-                                for dy in range(-45, 46):
-                                    if len(x_test_sample) == 50:
-                                        break
-                                    if not ((np.abs(dx) == dis * downrs and np.abs(dy) <= dis * downrs) or (np.abs(dx) <= dis * downrs and np.abs(dy) == dis * downrs)):
-                                        continue
-                                    x = i + dx
-                                    y = j + dy
-                                    if (not x % downrs == 0) or (not y % downrs == 0):
-                                        continue
-                                    exp_merge = np.zeros(len(selected_index))
-                                    if x < 0 or x >= adatasub.layers['watershed_labels'].shape[0] or y < 0 or y >= adatasub.layers['watershed_labels'].shape[1]:
-                                        continue
-                                    idx_nb = int(math.floor(x / downrs) * math.ceil(patchsizey / downrs) + math.floor(y / downrs))
-                                    if idx_nb >= 0 and idx_nb < all_exp_merged_bins.shape[0] and np.sum(all_exp_merged_bins[idx_nb, :]) > 0:
-                                        x_test_sample.append(all_exp_merged_bins[idx_nb, :])
-                                        x_test_pos_sample.append([x, y])
+                        for dx, dy in offsets:
+                            if len(x_test_sample) == 50:
+                                break
+                            x = i + dx
+                            y = j + dy
+                            exp_merge = np.zeros(len(selected_index))
+                            if x < 0 or x >= adatasub.layers['watershed_labels'].shape[0] or y < 0 or y >= adatasub.layers['watershed_labels'].shape[1]:
+                                continue
+                            idx_nb = int(math.floor(x / downrs) * math.ceil(patchsizey / downrs) + math.floor(y / downrs))
+                            if idx_nb >= 0 and idx_nb < all_exp_merged_bins.shape[0] and np.sum(all_exp_merged_bins[idx_nb, :]) > 0:
+                                x_test_sample.append(all_exp_merged_bins[idx_nb, :])
+                                x_test_pos_sample.append([x, y])
                         if len(x_test_sample) < 50:
                             continue
                         x_test_tmp.append(x_test_sample)

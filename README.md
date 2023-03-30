@@ -60,16 +60,15 @@ Finally, run the following script to make predictions patch by path.
 ```
 python train_patch.py
 ```
-
 ### Reproducing cell segmentations for the Stereo-seq and Seq-scope datasets
-The cell segmentations for the whole section of Stereo-seq can be generated following the instruction in the "Processing large-scale data" section.
+The cell segmentations for the whole Stereo-seq section can be generated following the instruction in the "Processing large-scale data" section.
 
-Follow the instruction below to generate cell segmentations for the Seq-Scope mouse liver datasets. The Seq-Scope transcriptomics data can be downloaded from [GEO](https://www-ncbi-nlm-nih-gov.cmu.idm.oclc.org/geo/query/acc.cgi?acc=GSM5212844). Then run the following script to convert data format.
+Follow the instruction below to generate cell segmentations for the Seq-Scope mouse liver datasets. The Seq-Scope transcriptomics data can be downloaded from [GEO](https://www-ncbi-nlm-nih-gov.cmu.idm.oclc.org/geo/query/acc.cgi?acc=GSM5212844). Save the three files in the link to the `data` folder and unzip. Then run the following script to convert data format.
 ```
 python format.py
 ```
 
-The paired H&E images can be found at [Deep Blue Data](https://doi.org/10.7302/cjfe-wa35), the processed H&E images are already saved in the data folder. Run the following script to make predictions for the four tiles (2104-2107) of the Seq-Scope data:
+The paired H&E images can be found at [Deep Blue Data](https://doi.org/10.7302/cjfe-wa35), the processed H&E images corresponding to tiles 2104-2107 have already been saved to the `data` folder. Run the following script to make predictions for the four tiles (2104-2107) of the Seq-Scope data:
 ```
 python reproduce.py
 ```

@@ -35,6 +35,10 @@ An example is provided for one mouse adult brain section generated from the Ster
 ```
 gunzip data/Mouse_brain_Adult_GEM_bin1.tsv.gz
 ```
+The file of detected RNAs should follow the following format in a tab-delimited file:
+```
+geneID  row  column  MIDCounts
+```
 The corresponding staining image data is already in the folder. Then run the following script from the project home directory:
 ```
 python main.py
@@ -52,7 +56,7 @@ Next, run the following script from the project home directory to split the sect
 python split_data.py
 ```
 
-Finally, run the following script to make prediction patch by path.
+Finally, run the following script to make predictions patch by path.
 ```
 python train_patch.py
 ```
@@ -60,12 +64,12 @@ python train_patch.py
 ### Reproducing cell segmentations for the Stereo-seq and Seq-scope datasets
 The cell segmentations for the whole section of Stereo-seq can be generated following the instruction in the "Processing large-scale data" section.
 
-Follow the instruction below to generate cell segmentations for the Seq-scope datasets. The Seq-scope transcriptomics data can be downloaded here. Then run the following script to convert data format.
+Follow the instruction below to generate cell segmentations for the Seq-Scope mouse liver datasets. The Seq-Scope transcriptomics data can be downloaded from [GEO](https://www-ncbi-nlm-nih-gov.cmu.idm.oclc.org/geo/query/acc.cgi?acc=GSM5212844). Then run the following script to convert data format.
 ```
 python format.py
 ```
 
-Then run the following script to make predictions for the Seq-scope data:
+The paired H&E images can be found at [Deep Blue Data](https://doi.org/10.7302/cjfe-wa35), the processed H&E images are already saved in the data folder. Run the following script to make predictions for the four tiles (2104-2107) of the Seq-Scope data:
 ```
 python reproduce.py
 ```
@@ -83,7 +87,7 @@ row:column  cell_id
 ```
 where `row:column` is the coordinate of one spot indicating which row and column the spot is located in from the upper left corner, and `cell_id` is the index of the cell to which the spot belongs.
 
-A statistical summary for the segmented cells, including the number of cells identified and cell size statistics, will be saved to the `results` directory.
+A statistical summary for the segmented cells `cell_stats.txt`, including the number of cells identified and cell size statistics, will be saved to the `results` directory.
 
 ## Credits
 The software is an implementation of the method SCS, jointly developed by Hao Chen, Dongshunyi Li, and Ziv Bar-Joseph from the [System Biology Group @ Carnegie Mellon University](http://sb.cs.cmu.edu/).

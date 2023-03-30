@@ -20,10 +20,17 @@ The software has been tested on the CentOS Linux 7 system.
 - tensorflow 2.8.2</br>
 - tensorflow_addons 0.16.1</br>
 
-## Usage
-This section describes how to use SCS to perform cell segmentation on the high-resolution spatial transcriptomics data.
+### Installation
+It is recommended to create a virtual environment using [Conda](https://conda.io/projects/conda/en/latest/index.html). After successfully installing Anaconda/Miniconda, create an environment using the provided `environment.yml` file:
+```
+conda env create -f environment.yml
+conda activate SCS
+```
 
-An example is provided for one mouse adult brain section generated from the Stereo-seq platform. To run the example, download the [Mouse_brain_Adult_GEM_bin1.tsv.gz](https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000058/Bin1_matrix/Mouse_brain_Adult_GEM_bin1.tsv.gz) file from the [MOSTA](https://db.cngb.org/stomics/mosta/download.html) data portal and save it to the `data` folder, the corresponding staining image data is already in the folder. Then run the following script from the project home directory:
+## Usage
+This section describes an example of how to use SCS to perform cell segmentation on the high-resolution spatial transcriptomics data.
+
+An example is provided for one mouse adult brain section generated from the Stereo-seq platform. To run the example, download the [Mouse_brain_Adult_GEM_bin1.tsv.gz](https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000058/Bin1_matrix/Mouse_brain_Adult_GEM_bin1.tsv.gz) file from the [MOSTA](https://db.cngb.org/stomics/mosta/download.html) data portal and save it to the `data` folder under this project directory, the corresponding staining image data is already in the folder. Then run the following script from the project home directory:
 ```
 python main.py
 ```
@@ -42,6 +49,8 @@ Each line has the following format:
 row:column  cell_id
 ```
 where `row:column` is the coordinate of one spot indicating which row and column the spot is located in from the upper left corner, and `cell_id` is the index of the cell to which the spot belongs.
+
+A statistical summary for the segmented cells, including the number of cells identified and cell size statistics, will be saved to the `results` directory.
 
 ## Credits
 The software is an implementation of the method SCS, jointly developed by Hao Chen, Dongshunyi Li, and Ziv Bar-Joseph from the [System Biology Group @ Carnegie Mellon University](http://sb.cs.cmu.edu/).

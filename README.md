@@ -31,7 +31,11 @@ conda activate SCS
 ### Example
 This section describes an example of how to use SCS to perform cell segmentation on the high-resolution spatial transcriptomics data.
 
-An example is provided for one mouse adult brain section generated from the Stereo-seq platform. To run the example, download the [Mouse_brain_Adult_GEM_bin1.tsv.gz](https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000058/Bin1_matrix/Mouse_brain_Adult_GEM_bin1.tsv.gz) file from the [MOSTA](https://db.cngb.org/stomics/mosta/download.html) data portal and save it to the `data` folder under this project directory, the corresponding staining image data is already in the folder. Then run the following script from the project home directory:
+An example is provided for one mouse adult brain section generated from the Stereo-seq platform. To run the example, download the [Mouse_brain_Adult_GEM_bin1.tsv.gz](https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000058/Bin1_matrix/Mouse_brain_Adult_GEM_bin1.tsv.gz) file from the [MOSTA](https://db.cngb.org/stomics/mosta/download/) data portal and save it to the `data` folder under this project directory, then unzip the file by running the following command.
+```
+gunzip data/Mouse_brain_Adult_GEM_bin1.tsv.gz
+```
+The corresponding staining image data is already in the folder. Then run the following script from the project home directory:
 ```
 python main.py
 ```
@@ -39,8 +43,32 @@ python main.py
 The script run three steps to segment the provided patch: (*i*) preprocessing, *i.e.*, identifying nuclei and preparing data for the transformer, (*ii*) training the transformer and inference on all the spots in the patch, (*iii*), postprocessing, *i.e.*, gradient flow tracking. The preprocessing time on the demo patch will be about 10 minutes, transformer training will take roughly 1 hour with an Nvidia GeForce 10 series graphics card, and the postprocessing will take about 5 minutes.
 
 ### Processing large-scale data
+SCS can process large-scale spatial data by splitting the provided section into patches, and process the data patch by patch. This makes the prediction on very large datasets feasible on normal computers.
+
+The example of running SCS on the whole mouse brain section of Stereo-seq is as follows. Before running the example, the transcriptomics data [Mouse_brain_Adult_GEM_bin1.tsv.gz](https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000058/Bin1_matrix/Mouse_brain_Adult_GEM_bin1.tsv.gz) should be downloaded and saved to the `data` folder under this project directory and uncompressed. The corresponding image data [Mouse_brain_Adult.tif](https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000058/Image/Mouse_brain_Adult.tif) should be downloaded and saved to the same `data` folder as well.
+
+Next, run the following script from the project home directory to split the section and save the patches.
+```
+python split_data.py
+```
+
+Finally, run the following script to make prediction patch by path.
+```
+python train_patch.py
+```
 
 ### Reproducing cell segmentations for the Stereo-seq and Seq-scope datasets
+The cell segmentations for the whole section of Stereo-seq can be generated following the instruction in the "Processing large-scale data" section.
+
+Follow the instruction below to generate cell segmentations for the Seq-scope datasets. The Seq-scope transcriptomics data can be downloaded here. Then run the following script to convert data format.
+```
+python format.py
+```
+
+Then run the following script to make predictions for the Seq-scope data:
+```
+python reproduce.py
+```
 
 ## Output
 Results will be saved to `results` directory.

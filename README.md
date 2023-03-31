@@ -68,7 +68,7 @@ Follow the instruction below to generate cell segmentations for the Seq-Scope mo
 python format.py
 ```
 
-The paired H&E images can be found at [Deep Blue Data](https://doi.org/10.7302/cjfe-wa35), the processed H&E images corresponding to tiles 2104-2107 have already been saved to the `data` folder. Run the following script to make predictions for the four tiles (2104-2107) of the Seq-Scope data:
+The paired H&E images can be found at [Deep Blue Data](https://doi.org/10.7302/cjfe-wa35), the processed images corresponding to tiles 2104-2107 have already been saved to the `data` folder. Run the following script to make predictions for the four tiles (2104-2107) of the Seq-Scope data:
 ```
 python seqscope.py
 ```

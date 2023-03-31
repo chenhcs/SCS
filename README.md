@@ -8,23 +8,27 @@ SCS (Sub-cellular spatial transcriptomics Cell Segmentation) is a method that co
 The software has been tested on the CentOS Linux 7 system.
 
 ### Software requirements
-- python 3.9.7</br>
-- anndata 0.7.5</br>
-- matplotlib 3.5.0</br>
-- numpy 1.22.4</br>
-- pandas 1.3.4</br>
-- scanpy 1.8.2</br>
-- scikit-learn 1.0.1</br>
-- scipy 1.7.2</br>
+- python 3.9</br>
+- anndata</br>
+- matplotlib</br>
+- numpy</br>
+- pandas</br>
+- scanpy</br>
+- scikit-learn</br>
+- scipy</br>
+- tensorflow</br>
+- tensorflow_addons</br>
+- imagecodecs </br>
+- scikit-misc </br>
 - [spateo](https://spateo-release.readthedocs.io/en/latest/installation.html)
-- tensorflow 2.8.2</br>
-- tensorflow_addons 0.16.1</br>
+
 
 ### Installation
-It is recommended to create a virtual environment using [Conda](https://conda.io/projects/conda/en/latest/index.html). After successfully installing Anaconda/Miniconda, create an environment using the provided `environment.yml` file:
+It is recommended to create a virtual environment using [Conda](https://conda.io/projects/conda/en/latest/index.html). After successfully installing Anaconda/Miniconda, create an environment using the provided `environment.yml` file, then manually install the spateo package:
 ```
 conda env create -f environment.yml
 conda activate SCS
+pip install spateo-release
 ```
 
 ## Usage

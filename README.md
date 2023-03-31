@@ -43,12 +43,20 @@ The file of detected RNAs should follow the following format in a tab-delimited 
 ```
 geneID  row  column  MIDCounts
 ```
-The corresponding staining image data is already in the folder. Then run the following script from the project home directory:
+The corresponding staining image data is already in the folder. Run the following script from the project home directory to take one patch from the whole section as an example.
 ```
-python example.py
+python patch_cut.py
+```
+Then use the following python code to run SCS on the example patch or run the `example.py` script:
+```
+from src import scs
+
+bin_file = 'data/Mouse_brain_Adult_GEM_bin1_sub.tsv'
+image_file = 'data/Mouse_brain_Adult_sub.tif'
+scs.segment_cells(bin_file, image_file, align='rigid')
 ```
 
-The script run three steps to segment the provided patch: (*i*) preprocessing, *i.e.*, identifying nuclei and preparing data for the transformer, (*ii*) training the transformer and inference on all the spots in the patch, (*iii*), postprocessing, *i.e.*, gradient flow tracking. The preprocessing time on the demo patch will be about 10 minutes, transformer training will take roughly 1 hour with an Nvidia GeForce 10 series graphics card, and the postprocessing will take about 5 minutes.
+The `segment_cells` function will run three steps to segment the provided patch: (*i*) preprocessing, *i.e.*, identifying nuclei and preparing data for the transformer, (*ii*) training the transformer and inference on all the spots in the patch, (*iii*), postprocessing, *i.e.*, gradient flow tracking. The preprocessing time on the demo patch will be about 10 minutes, transformer training will take roughly 1 hour with an Nvidia GeForce 10 series graphics card, and the postprocessing will take about 5 minutes.
 
 ### Processing large-scale data
 SCS can process large-scale spatial data by splitting the provided section into patches, and process the data patch by patch. This makes the prediction on very large datasets feasible on normal computers.

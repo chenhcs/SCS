@@ -4,9 +4,7 @@ import anndata as ad
 import matplotlib.pyplot as plt
 from scipy.stats import multivariate_normal
 
-def read_gradient(file, adata, patch_size):
-    cell_diameter = 15
-
+def read_gradient(file, adata, patch_size, bin_size, dia_estimate):
     watershed2x = {}
     watershed2y = {}
     for i in range(adata.layers['watershed_labels'].shape[0]):
@@ -44,9 +42,9 @@ def read_gradient(file, adata, patch_size):
             class_prior_ext = np.zeros(class_num)
             for center in watershed2center:
                 dis_c = euclidean_distance(watershed2center[center][0], watershed2center[center][1], int(x), int(y))
-                if dis_c <= int(cell_diameter):
+                if dis_c <= int(dia_estimate):
                     class_prior += dir_to_class(watershed2center[center][0] - int(x) , watershed2center[center][1] - int(y), class_num, watershed2center[center][0], watershed2center[center][1])
-                if dis_c <= int(cell_diameter) * 1.25:
+                if dis_c <= int(dia_estimate) * 1.25:
                     class_prior_ext += dir_to_class(watershed2center[center][0] - int(x) , watershed2center[center][1] - int(y), class_num, watershed2center[center][0], watershed2center[center][1])
             if np.sum(class_prior) > 0:
                  class_prior = class_prior_ext
@@ -73,19 +71,19 @@ def read_gradient(file, adata, patch_size):
             pred_V[int(x), int(y)] = - float(cx) * 10 #float(x) - float(cx) #- float(cx) #
             pred_C[int(x), int(y)] = float(b)
 
-    def diffuse():
+    def diffuse(bin_size):
         dx_new = dx.copy()
         dy_new = dy.copy()
         intensity_new = intensity.copy()
         for i in range(dx_new.shape[0]):
-            if i % 3 == 0:
+            if i % bin_size == 0:
                 for j in range(dx_new.shape[1]):
-                    if j % 3 == 0:
+                    if j % bin_size == 0:
                         neighbor_grad_x = []
                         neighbor_grad_y = []
                         neighbor_intensity = []
-                        for k in [-3, 0, 3]:
-                            for n in [-3, 0, 3]:
+                        for k in [-bin_size, 0, bin_size]:
+                            for n in [-bin_size, 0, bin_size]:
                                 if i + k >= 0 and i + k < dx_new.shape[0] and j + n >= 0 and j + n < dx_new.shape[1]:
                                     neighbor_grad_x.append(dx[i + k, j + n])
                                     neighbor_grad_y.append(dy[i + k, j + n])
@@ -96,7 +94,7 @@ def read_gradient(file, adata, patch_size):
         return dx_new, dy_new, intensity_new
 
     for i in range(2):
-        dx, dy, intensity = diffuse()
+        dx, dy, intensity = diffuse(bin_size)
 
     return intensity, dx, dy, pred_U, pred_V, pred_C
 
@@ -136,7 +134,7 @@ def class_to_gradient():
 
     return class2dir
 
-def gvf_tracking(dx, dy, intensity, K=50, Diffusions=10, Mu=5, Lambda=5, Iterations=10,
+def gvf_tracking(dx, dy, intensity, bin_size, K=50, Diffusions=10, Mu=5, Lambda=5, Iterations=10,
                  dT=0.05):
     """
     References
@@ -194,8 +192,8 @@ def gvf_tracking(dx, dy, intensity, K=50, Diffusions=10, Mu=5, Lambda=5, Iterati
         while(cosphi > 0):
 
             # calculate step
-            xStep = round_float(dx[int(Trajectory[points-1, 0]), int(Trajectory[points-1, 1])]) * 3
-            yStep = round_float(dy[int(Trajectory[points-1, 0]), int(Trajectory[points-1, 1])]) * 3
+            xStep = round_float(dx[int(Trajectory[points-1, 0]), int(Trajectory[points-1, 1])]) * bin_size
+            yStep = round_float(dy[int(Trajectory[points-1, 0]), int(Trajectory[points-1, 1])]) * bin_size
             if xStep == 0 and yStep == 0 and last_xstep==0 and last_ystep==0:
                 novel = -1
                 break
@@ -401,16 +399,19 @@ def round_float(x):
             t -= 1.0
         return -t
 
-def postprocess():
-    downrs = 3
-    adata = ad.read_h5ad('data/spots.h5ad')
+def postprocess(startx, starty, patchsize, bin_size, dia_estimate):
+    downrs = bin_size
+    startx = str(startx)
+    starty = str(starty)
+    patchsize = str(patchsize)
+    adata = ad.read_h5ad('data/spots' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.h5ad')
     patchsizex = adata.X.shape[0]
     patchsizey = adata.X.shape[1]
 
     print('Adjust spot prediction priors...')
-    intensity, dx, dy, pred_U, pred_V, pred_C = read_gradient('results/spot_prediction.txt', adata, (int(patchsizex), int(patchsizey)))
+    intensity, dx, dy, pred_U, pred_V, pred_C = read_gradient('results/spot_prediction.txt', adata, (int(patchsizex), int(patchsizey)), bin_size, dia_estimate)
     print('Gradient flow tracking...')
-    Segmentation, Sinks, dx, dy, mask = gvf_tracking(dx, dy, intensity)
+    Segmentation, Sinks, dx, dy, mask = gvf_tracking(dx, dy, intensity, bin_size)
     #print('Sinks', Sinks, len(Sinks))
     print('Merge basins...')
     merged = merge_sinks(Segmentation, Sinks, downrs)
@@ -440,7 +441,7 @@ def postprocess():
                             break
 
     fig, ax = plt.subplots(figsize=(32, 32), tight_layout=True)
-    fw = open('results/spot2cell.txt', 'w')
+    fw = open('results/spot2cell_' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '_all_merge.txt', 'w')
     for i in range(merged.shape[0]):
         for j in range(merged.shape[1]):
             if merged[i, j] > 0:
@@ -453,4 +454,4 @@ def postprocess():
     plt.imshow(merged, alpha=0.6, cmap='tab10')
     plt.imshow(edges, alpha=0.2, cmap='Greys')
     q = ax.quiver(dy * mask * 10, - dx * mask * 10, intensity, scale=5, width=0.2, units='x')
-    plt.savefig('results/cell_masks.png')
+    plt.savefig('results/cell_masks_' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.png')

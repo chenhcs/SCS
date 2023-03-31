@@ -86,7 +86,7 @@ def create_transformer_classifier(class_num, input_shape, input_position_shape, 
     model = keras.Model(inputs=[inputs, inputs_positions], outputs=[pos, binary])
     return model
 
-def run_experiment(model, x_train, x_train_pos, x_train_, x_train_pos_, y_train, y_train_, y_binary_train, x_test, x_test_pos, x_validation, x_validation_pos, y_validation, y_binary_validation, learning_rate, weight_decay, batch_size, num_epochs):
+def run_experiment(startx, starty, patchsize, model, x_train, x_train_pos, x_train_, x_train_pos_, y_train, y_train_, y_binary_train, x_test, x_test_pos, x_validation, x_validation_pos, y_validation, y_binary_validation, learning_rate, weight_decay, batch_size, num_epochs):
     optimizer = tfa.optimizers.AdamW(
         learning_rate=learning_rate, weight_decay=weight_decay
     )
@@ -136,21 +136,37 @@ def run_experiment(model, x_train, x_train_pos, x_train_, x_train_pos_, y_train,
 
     print('Inference on all the spots...')
     model.load_weights(checkpoint_filepath)
-    pred_centers_test, pred_binary_test = model.predict(x = [x_test, x_test_pos], batch_size=batch_size)
+    pred_centers_test_all = []
+    pred_binary_test_all = []
+    for i in range(int(len(x_test) / 10000) + 1):
+        pred_centers_test_, pred_binary_test_ = model.predict(x = [x_test[i*10000: (i+1)*10000], x_test_pos[i*10000: (i+1)*10000]], batch_size=batch_size)
+        pred_centers_test_all.append(pred_centers_test_)
+        pred_binary_test_all.append(pred_binary_test_)
+        gc.collect()
+    pred_centers_test = np.vstack(pred_centers_test_all)
+    pred_binary_test = np.vstack(pred_binary_test_all)
     #for i in range(len(x_test_pos)):
     #    print(x_test_pos[i][0], pred_binary_test[i], pred_centers_test[i])
 
-    pred_centers_train, pred_binary_train = model.predict(x = [x_train_, x_train_pos_], batch_size=batch_size)
+    pred_centers_train_all = []
+    pred_binary_train_all = []
+    for i in range(int(len(x_train_) / 10000) + 1):
+        pred_centers_train_, pred_binary_train_ = model.predict(x = [x_train_[i*10000: (i+1)*10000], x_train_pos_[i*10000: (i+1)*10000]], batch_size=batch_size)
+        pred_centers_train_all.append(pred_centers_train_)
+        pred_binary_train_all.append(pred_binary_train_)
+        gc.collect()
+    pred_centers_train = np.vstack(pred_centers_train_all)
+    pred_binary_train = np.vstack(pred_binary_train_all)
     #for i in range(len(y_train_)):
     #    print(y_train_[i], pred_binary_train[i], pred_centers_train[i])
-    x_train_pos__ = np.load('data/x_train_pos.npz')
+    x_train_pos__ = np.load('data/x_train_pos_' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.npz')
     x_train_pos__ = x_train_pos__['x_train_pos']
-    x_test_pos_ = np.load('data/x_test_pos.npz')
+    x_test_pos_ = np.load('data/x_test_pos_' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.npz')
     x_test_pos_ = x_test_pos_['x_test_pos']
     #print(y_train_.shape, x_train_pos__.shape)
 
     print('Write prediction results...')
-    with open('results/spot_prediction.txt', 'w') as fw:
+    with open('results/spot_prediction_' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.txt', 'w') as fw:
         for i in range(len(y_train_)):
             fw.write(str(x_train_pos__[i][0][0]) + '\t' + str(x_train_pos__[i][0][1]) + '\t' + str(pred_binary_train[i][0]) + '\t' + ':'.join([str(c) for c in pred_centers_train[i]]) + '\n')
         for i in range(len(x_test_pos_)):
@@ -158,22 +174,25 @@ def run_experiment(model, x_train, x_train_pos, x_train_, x_train_pos_, y_train,
 
     return
 
-def train():
+def train(startx, starty, patchsize, epochs):
+    startx = str(startx)
+    starty = str(starty)
+    patchsize = str(patchsize)
     try:
         os.mkdir('results/')
     except FileExistsError:
         print('results folder exists.')
-    x_train_ = np.load('data/x_train.npz')
+    x_train_ = np.load('data/x_train_' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.npz')
     x_train_ = x_train_['x_train'].astype(np.float32)
-    x_train_pos_ = np.load('data/x_train_pos.npz')
+    x_train_pos_ = np.load('data/x_train_pos_' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.npz')
     x_train_pos_ = x_train_pos_['x_train_pos'].astype(np.int32)
-    y_train_ = np.load('data/y_train.npz')
+    y_train_ = np.load('data/y_train_' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.npz')
     y_train_ = y_train_['y_train']
-    y_binary_train_ = np.load('data/y_binary_train.npz')
+    y_binary_train_ = np.load('data/y_binary_train_' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.npz')
     y_binary_train_ = y_binary_train_['y_binary_train'].astype(np.int32)
-    x_test = np.load('data/x_test.npz')
+    x_test = np.load('data/x_test_' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.npz')
     x_test = x_test['x_test'].astype(np.float32)
-    x_test_pos = np.load('data/x_test_pos.npz')
+    x_test_pos = np.load('data/x_test_pos_' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.npz')
     x_test_pos = x_test_pos['x_test_pos'].astype(np.int32)
     class_num = 16
 
@@ -216,7 +235,7 @@ def train():
     learning_rate = 0.001
     weight_decay = 0.0001
     batch_size = 10
-    num_epochs = 100
+    num_epochs = epochs
     num_patches = x_train.shape[1]
     projection_dim = 64
     num_heads = 1
@@ -228,4 +247,4 @@ def train():
     mlp_head_units = [1024, 256]  # Size of the dense layers of the final classifier
 
     transformer_classifier = create_transformer_classifier(class_num, input_shape, input_position_shape, num_patches, projection_dim, num_heads, transformer_units, transformer_layers, mlp_head_units)
-    run_experiment(transformer_classifier, x_train, x_train_pos, x_train_, x_train_pos_, y_train, y_train_, y_binary_train, x_test, x_test_pos, x_validation, x_validation_pos, y_validation, y_binary_validation, learning_rate, weight_decay, batch_size, num_epochs)
+    run_experiment(startx, starty, patchsize, transformer_classifier, x_train, x_train_pos, x_train_, x_train_pos_, y_train, y_train_, y_binary_train, x_test, x_test_pos, x_validation, x_validation_pos, y_validation, y_binary_validation, learning_rate, weight_decay, batch_size, num_epochs)

@@ -1,4 +1,4 @@
-from src import preprocessing, transformer, postprocessing
+from src import scs
 
 fw = open('data/Mouse_brain_Adult_GEM_bin1_sub.tsv', 'w')
 # Take one patch from the whole mouse brain section
@@ -15,6 +15,4 @@ fw.close()
 
 bin_file = 'data/Mouse_brain_Adult_GEM_bin1_sub.tsv'
 image_file = 'data/Mouse_brain_Adult_sub.tif'
-preprocessing.preprocess(bin_file, image_file)
-transformer.train()
-postprocessing.postprocess()
+scs.segment_cells(bin_file, image_file, align='rigid')

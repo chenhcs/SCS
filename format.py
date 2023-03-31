@@ -2,6 +2,7 @@ import sys
 import os
 import csv
 import scipy
+import math
 import numpy as np
 import pandas as pd
 
@@ -70,9 +71,9 @@ for i in [2104, 2105, 2106, 2107]:
             if int(x) > maxx:
                 maxx = int(x)
 
-    fw = open('data/Mouse_liver_bin_' + tile + '.tsv', 'w')
+    fw = open('data/Mouse_liver_bin_' + str(i) + '.tsv', 'w')
     xyg2c = {}
-    with open('data/Mouse_liver_bin_' + tile + '_ori.tsv') as fr:
+    with open('data/Mouse_liver_bin_' + str(i) + '_ori.tsv') as fr:
         header = fr.readline()
         fw.write(header)
         for line in fr:

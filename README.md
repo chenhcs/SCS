@@ -45,7 +45,7 @@ geneID  row  column  MIDCounts
 ```
 The corresponding staining image data is already in the folder. Then run the following script from the project home directory:
 ```
-python main.py
+python example.py
 ```
 
 The script run three steps to segment the provided patch: (*i*) preprocessing, *i.e.*, identifying nuclei and preparing data for the transformer, (*ii*) training the transformer and inference on all the spots in the patch, (*iii*), postprocessing, *i.e.*, gradient flow tracking. The preprocessing time on the demo patch will be about 10 minutes, transformer training will take roughly 1 hour with an Nvidia GeForce 10 series graphics card, and the postprocessing will take about 5 minutes.
@@ -55,15 +55,11 @@ SCS can process large-scale spatial data by splitting the provided section into 
 
 The example of running SCS on the whole mouse brain section of Stereo-seq is as follows. Before running the example, the transcriptomics data [Mouse_brain_Adult_GEM_bin1.tsv.gz](https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000058/Bin1_matrix/Mouse_brain_Adult_GEM_bin1.tsv.gz) should be downloaded and saved to the `data` folder under this project directory and uncompressed. The corresponding image data [Mouse_brain_Adult.tif](https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000058/Image/Mouse_brain_Adult.tif) should be downloaded and saved to the same `data` folder as well.
 
-Next, run the following script from the project home directory to split the section and save the patches.
+Next, run the following script from the project home directory to run SCS on the whole mouse brain section, in which SCS will split the section into patches of size (patch_size) 1200 spots x 1200 spots, and make predictions patch by path.
 ```
-python split_data.py
+python large_scale.py
 ```
 
-Finally, run the following script to make predictions patch by path.
-```
-python train_patch.py
-```
 ### Reproducing cell segmentations for the Stereo-seq and Seq-scope datasets
 The cell segmentations for the whole Stereo-seq section can be generated following the instruction in the "Processing large-scale data" section.
 

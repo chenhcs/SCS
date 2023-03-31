@@ -55,7 +55,7 @@ SCS can process large-scale spatial data by splitting the provided section into 
 
 The example of running SCS on the whole mouse brain section of Stereo-seq is as follows. Before running the example, the transcriptomics data [Mouse_brain_Adult_GEM_bin1.tsv.gz](https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000058/Bin1_matrix/Mouse_brain_Adult_GEM_bin1.tsv.gz) should be downloaded and saved to the `data` folder under this project directory and uncompressed. The corresponding image data [Mouse_brain_Adult.tif](https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000058/Image/Mouse_brain_Adult.tif) should be downloaded and saved to the same `data` folder as well.
 
-Next, run the following script from the project home directory to run SCS on the whole mouse brain section, in which SCS will split the section into patches of size (patch_size) 1200 spots x 1200 spots, and make predictions patch by path.
+Next, run the following script from the project home directory to run SCS on the whole mouse brain section, in which SCS will split the section into patches of size (patch_size) 1200 spots x 1200 spots, and make predictions patch by patch.
 ```
 python large_scale.py
 ```
@@ -70,7 +70,7 @@ python format.py
 
 The paired H&E images can be found at [Deep Blue Data](https://doi.org/10.7302/cjfe-wa35), the processed H&E images corresponding to tiles 2104-2107 have already been saved to the `data` folder. Run the following script to make predictions for the four tiles (2104-2107) of the Seq-Scope data:
 ```
-python reproduce.py
+python seqscope.py
 ```
 
 ## Output

@@ -101,7 +101,7 @@ def run_experiment(startx, starty, patchsize, model, x_train, x_train_pos, x_tra
         },
     )
 
-    checkpoint_filepath = os.path.join('./ckpt', 'model', 'ckpt')
+    checkpoint_filepath = os.path.join('./ckpt', 'model_' + startx + '_' + starty + '_' + patchsize, 'ckpt')
     if not os.path.exists(checkpoint_filepath):
         os.makedirs(checkpoint_filepath)
     if len(x_validation[np.where(y_binary_validation == 1)]) < 100:

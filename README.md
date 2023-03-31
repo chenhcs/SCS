@@ -71,12 +71,14 @@ bin_file = 'data/Mouse_brain_Adult_GEM_bin1.tsv'
 image_file = 'data/Mouse_brain_Adult.tif'
 scs.segment_cells(bin_file, image_file, align='rigid', patch_size=1200)
 ```
-The `patch_size` parameter controls how large is one patch.
+The `patch_size` parameter controls how large one patch will be.
+
+We also advise the users to save patches into separate files as done in the "Example" section and run SCS on patches parallelly on different CPUs/GPUs.
 
 ### Reproducing cell segmentations for the Stereo-seq and Seq-scope datasets
 The cell segmentations for the whole Stereo-seq section can be generated following the instruction in the "Processing large-scale data" section.
 
-Follow the instruction below to generate cell segmentations for the Seq-Scope mouse liver datasets. The Seq-Scope transcriptomics data can be downloaded from [GEO](https://www-ncbi-nlm-nih-gov.cmu.idm.oclc.org/geo/query/acc.cgi?acc=GSM5212844). Save the three files in the link to the `data` folder and unzip. Then run the following script to convert data format.
+Follow the instruction below to generate cell segmentations for the Seq-Scope mouse liver dataset. The Seq-Scope transcriptomics data can be downloaded from [GEO](https://www-ncbi-nlm-nih-gov.cmu.idm.oclc.org/geo/query/acc.cgi?acc=GSM5212844). Save the three files in the link to the `data` folder and unzip the `tsv.gz` files. The [file](https://deepblue.lib.umich.edu/data/downloads/g158bh60f) for coordinates of sequencing spots can be downloaded from [Deep Blue Data](https://deepblue.lib.umich.edu/data/concern/file_sets/g158bh60f). Save this file to the `data` folder as well. Then run the following script to convert data format.
 ```
 python format.py
 ```

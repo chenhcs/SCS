@@ -10,9 +10,12 @@ import os
 from scipy.sparse import lil_matrix, csr_matrix, vstack
 
 
-def preprocess(bin_file, image_file, align, startx, starty, patchsize, bin_size, n_neighbor):
+def preprocess(bin_file, image_file, prealigned, align, startx, starty, patchsize, bin_size, n_neighbor):
     #read data
-    adatasub = st.io.read_bgi_agg(bin_file, image_file)
+    if prealigned:
+        adatasub = st.io.read_bgi_agg(bin_file, image_file, prealigned=True)
+    else:
+        adatasub = st.io.read_bgi_agg(bin_file, image_file)
     if int(patchsize) > 0:
         adatasub = adatasub[int(startx):int(startx)+int(patchsize),int(starty):int(starty)+int(patchsize)]
 

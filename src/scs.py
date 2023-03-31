@@ -1,8 +1,10 @@
+import math
+import numpy as np
 from src import preprocessing, transformer, postprocessing
 
-def segment_cells(bin_file, image_file, align=None, patch_size=0, bin_size=3, n_neighbor=50, epochs=100, dia_estimate=15):
+def segment_cells(bin_file, image_file, prealigned=False, align=None, patch_size=0, bin_size=3, n_neighbor=50, epochs=100, dia_estimate=15):
     if patch_size == 0:
-        preprocessing.preprocess(bin_file, image_file, align, 0, 0, patch_size, bin_size, n_neighbor)
+        preprocessing.preprocess(bin_file, image_file, prealigned, align, 0, 0, patch_size, bin_size, n_neighbor)
         transformer.train(0, 0, patch_size, epochs)
         postprocessing.postprocess(0, 0, patch_size, bin_size, dia_estimate)
     else:
@@ -16,8 +18,14 @@ def segment_cells(bin_file, image_file, align=None, patch_size=0, bin_size=3, n_
                 c_all.append(int(c))
         rmax = np.max(r_all) - np.min(r_all)
         cmax = np.max(c_all) - np.min(c_all)
+        n_patches = math.ceil(rmax / patch_size) * math.ceil(cmax / patch_size)
+        print(str(n_patches) + ' patches will be processed.')
         for startr in range(0, rmax, patch_size):
             for startc in range(0, cmax, patch_size):
-                preprocessing.preprocess(bin_file, image_file, align, startr, startc, patch_size, bin_size, n_neighbor)
-                transformer.train(startr, startc, patch_size, epochs)
-                postprocessing.postprocess(startr, startc, patch_size, bin_size, dia_estimate)
+                try:
+                    print('Processing the patch ' + str(startr) + ':' + str(startc) + '...')
+                    preprocessing.preprocess(bin_file, image_file, prealigned, align, startr, startc, patch_size, bin_size, n_neighbor)
+                    transformer.train(startr, startc, patch_size, epochs)
+                    postprocessing.postprocess(startr, startc, patch_size, bin_size, dia_estimate)
+                except:
+                    print('Patch ' + str(startr) + ':' + str(startc) + ' failed due to no nuclei detected by Watershed or too few RNAs in the patch.')

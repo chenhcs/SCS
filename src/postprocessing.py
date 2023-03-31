@@ -399,6 +399,22 @@ def round_float(x):
             t -= 1.0
         return -t
 
+def result_stats(merged, startx, starty, patchsize):
+    cell2nspots = {}
+    for i in range(merged.shape[0]):
+        for j in range(merged.shape[1]):
+            if merged[i, j] > 0:
+                if merged[i, j] not in cell2nspots:
+                    cell2nspots[merged[i, j]] = 1
+                else:
+                    cell2nspots[merged[i, j]] += 1
+    all_sizes = [len(cell2nspots[cell]) for cell in cell2nspots]
+
+    with open('results/cell_stats_' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.txt') as fw:
+        fw.write('Number of cells: ' + str(len(cell2nspots)) + '\n')
+        fw.write('Average cell size: ' + str(np.mean(all_sizes)) + '\n')
+        fw.write('Standard deviation of cell sizes: ' + str(np.std(all_sizes)) + '\n')
+
 def postprocess(startx, starty, patchsize, bin_size, dia_estimate):
     downrs = bin_size
     startx = str(startx)
@@ -409,7 +425,7 @@ def postprocess(startx, starty, patchsize, bin_size, dia_estimate):
     patchsizey = adata.X.shape[1]
 
     print('Adjust spot prediction priors...')
-    intensity, dx, dy, pred_U, pred_V, pred_C = read_gradient('results/spot_prediction.txt', adata, (int(patchsizex), int(patchsizey)), bin_size, dia_estimate)
+    intensity, dx, dy, pred_U, pred_V, pred_C = read_gradient('results/spot_prediction_' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.txt', adata, (int(patchsizex), int(patchsizey)), bin_size, dia_estimate)
     print('Gradient flow tracking...')
     Segmentation, Sinks, dx, dy, mask = gvf_tracking(dx, dy, intensity, bin_size)
     #print('Sinks', Sinks, len(Sinks))
@@ -441,7 +457,7 @@ def postprocess(startx, starty, patchsize, bin_size, dia_estimate):
                             break
 
     fig, ax = plt.subplots(figsize=(32, 32), tight_layout=True)
-    fw = open('results/spot2cell_' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '_all_merge.txt', 'w')
+    fw = open('results/spot2cell_' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.txt', 'w')
     for i in range(merged.shape[0]):
         for j in range(merged.shape[1]):
             if merged[i, j] > 0:
@@ -455,3 +471,5 @@ def postprocess(startx, starty, patchsize, bin_size, dia_estimate):
     plt.imshow(edges, alpha=0.2, cmap='Greys')
     q = ax.quiver(dy * mask * 10, - dx * mask * 10, intensity, scale=5, width=0.2, units='x')
     plt.savefig('results/cell_masks_' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.png')
+
+    result_stats(merged, startx, starty, patchsize)

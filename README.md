@@ -41,9 +41,9 @@ gunzip data/Mouse_brain_Adult_GEM_bin1.tsv.gz
 ```
 The file of detected RNAs should follow the following format in a tab-delimited file:
 ```
-geneID  row  column  MIDCounts
+geneID  row  column  counts
 ```
-The corresponding staining image data is already in the folder. Run the following script from the project home directory to take one patch from the whole section as an example.
+The corresponding staining image data is already in the `data` folder. Run the following script from the project home directory to take one patch from the whole section as an example:
 ```
 python patch_cut.py
 ```
@@ -63,10 +63,15 @@ SCS can process large-scale spatial data by splitting the provided section into 
 
 The example of running SCS on the whole mouse brain section of Stereo-seq is as follows. Before running the example, the transcriptomics data [Mouse_brain_Adult_GEM_bin1.tsv.gz](https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000058/Bin1_matrix/Mouse_brain_Adult_GEM_bin1.tsv.gz) should be downloaded and saved to the `data` folder under this project directory and uncompressed. The corresponding image data [Mouse_brain_Adult.tif](https://ftp.cngb.org/pub/SciRAID/stomics/STDS0000058/Image/Mouse_brain_Adult.tif) should be downloaded and saved to the same `data` folder as well.
 
-Next, run the following script from the project home directory to run SCS on the whole mouse brain section, in which SCS will split the section into patches of size (patch_size) 1200 spots x 1200 spots, and make predictions patch by patch.
+Next, run the following code or the `large_scale.py` script from the project home directory to run SCS on the whole mouse brain section, in which SCS will split the section into patches of size (patch_size) 1200 spots x 1200 spots, and make predictions patch by patch.
 ```
-python large_scale.py
+from src import scs
+
+bin_file = 'data/Mouse_brain_Adult_GEM_bin1.tsv'
+image_file = 'data/Mouse_brain_Adult.tif'
+scs.segment_cells(bin_file, image_file, align='rigid', patch_size=1200)
 ```
+The `patch_size` parameter controls how large is one patch.
 
 ### Reproducing cell segmentations for the Stereo-seq and Seq-scope datasets
 The cell segmentations for the whole Stereo-seq section can be generated following the instruction in the "Processing large-scale data" section.

@@ -410,9 +410,9 @@ def result_stats(merged, startx, starty, patchsize):
                     cell2nspots[merged[i, j]] += 1
     all_sizes = [cell2nspots[cell] for cell in cell2nspots]
 
-    with open('results/cell_stats_' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.txt') as fw:
+    with open('results/cell_stats_' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.txt', 'w') as fw:
         fw.write('Number of cells: ' + str(len(cell2nspots)) + '\n')
-        fw.write('Average cell size: ' + str(np.mean(all_sizes)) + '\n')
+        fw.write('Average cell size (spots): ' + str(np.mean(all_sizes)) + '\n')
         fw.write('Standard deviation of cell sizes: ' + str(np.std(all_sizes)) + '\n')
 
 def postprocess(startx, starty, patchsize, bin_size, dia_estimate):
@@ -464,6 +464,8 @@ def postprocess(startx, starty, patchsize, bin_size, dia_estimate):
                 fw.write(str(i) + ':' + str(j) + '\t' + str(merged[i, j]) + '\n')
     fw.close()
 
+    result_stats(merged, startx, starty, patchsize)
+
     idx = np.where(merged == 0)
     merged = merged % 9 + 1
     merged[idx] = 0
@@ -471,5 +473,3 @@ def postprocess(startx, starty, patchsize, bin_size, dia_estimate):
     plt.imshow(edges, alpha=0.2, cmap='Greys')
     q = ax.quiver(dy * mask * 10, - dx * mask * 10, intensity, scale=5, width=0.2, units='x')
     plt.savefig('results/cell_masks_' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.png')
-
-    result_stats(merged, startx, starty, patchsize)

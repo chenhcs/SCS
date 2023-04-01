@@ -408,7 +408,7 @@ def result_stats(merged, startx, starty, patchsize):
                     cell2nspots[merged[i, j]] = 1
                 else:
                     cell2nspots[merged[i, j]] += 1
-    all_sizes = [len(cell2nspots[cell]) for cell in cell2nspots]
+    all_sizes = [cell2nspots[cell] for cell in cell2nspots]
 
     with open('results/cell_stats_' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.txt') as fw:
         fw.write('Number of cells: ' + str(len(cell2nspots)) + '\n')

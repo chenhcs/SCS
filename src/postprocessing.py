@@ -336,7 +336,7 @@ def fill_holes(label_mat, downrs):
     filled = 0
     label_mat_new = label_mat.copy()
     for i in range(label_mat.shape[0]):
-        for j in range(label_mat.shape[0]):
+        for j in range(label_mat.shape[1]):
             if i % downrs == 0 and j % downrs == 0 and label_mat[i, j] == 0:
                 neighbor_labels = []
                 for d in [[-downrs, -downrs], [-downrs, 0], [-downrs, downrs], [downrs, -downrs], [downrs, 0], [downrs, downrs], [0, -downrs], [0, downrs]]:
@@ -351,7 +351,7 @@ def fill_holes(label_mat, downrs):
 def remove_small_cells(label_mat):
     label_size = {}
     for i in range(label_mat.shape[0]):
-        for j in range(label_mat.shape[0]):
+        for j in range(label_mat.shape[1]):
             if label_mat[i , j] > 0:
                 if label_mat[i , j] not in label_size:
                     label_size[label_mat[i , j]] = 1
@@ -359,7 +359,7 @@ def remove_small_cells(label_mat):
                     label_size[label_mat[i , j]] += 1
     label_mat_new = np.zeros(label_mat.shape)
     for i in range(label_mat.shape[0]):
-        for j in range(label_mat.shape[0]):
+        for j in range(label_mat.shape[1]):
             if label_mat[i, j] > 0 and label_size[label_mat[i, j]] >= 200:
                 label_mat_new[i, j] = label_mat[i, j]
     return label_mat_new

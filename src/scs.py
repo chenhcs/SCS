@@ -27,5 +27,6 @@ def segment_cells(bin_file, image_file, prealigned=False, align=None, patch_size
                     preprocessing.preprocess(bin_file, image_file, prealigned, align, startr, startc, patch_size, bin_size, n_neighbor)
                     transformer.train(startr, startc, patch_size, epochs)
                     postprocessing.postprocess(startr, startc, patch_size, bin_size, dia_estimate)
-                except:
-                    print('Patch ' + str(startr) + ':' + str(startc) + ' failed due to no nuclei detected by Watershed or too few RNAs in the patch.')
+                except Exception as e:
+                    print(e)
+                    print('Patch ' + str(startr) + ':' + str(startc) + ' failed. This could be due to no nuclei detected by Watershed or too few RNAs in the patch.')

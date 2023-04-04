@@ -412,6 +412,7 @@ def result_stats(merged, startx, starty, patchsize):
 
     with open('results/cell_stats_' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.txt', 'w') as fw:
         fw.write('Number of cells: ' + str(len(cell2nspots)) + '\n')
+        fw.write('Patch size (spots x spots): ' + str(merged.shape[0]) + ' x ' + str(merged.shape[1]) + '\n')
         fw.write('Average cell size (spots): ' + str(np.mean(all_sizes)) + '\n')
         fw.write('Standard deviation of cell sizes: ' + str(np.std(all_sizes)) + '\n')
 

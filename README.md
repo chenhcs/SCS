@@ -55,6 +55,7 @@ bin_file = 'data/Mouse_brain_Adult_GEM_bin1_sub.tsv'
 image_file = 'data/Mouse_brain_Adult_sub.tif'
 scs.segment_cells(bin_file, image_file, align='rigid')
 ```
+Use `help(scs.segment_cells)` in python to see more instructions on the usages.
 
 The `segment_cells` function will run three steps to segment the provided patch: (*i*) preprocessing, *i.e.*, identifying nuclei and preparing data for the transformer, (*ii*) training the transformer and inference on all the spots in the patch, (*iii*), postprocessing, *i.e.*, gradient flow tracking. The preprocessing time on the demo patch will be about 10 minutes, transformer training will take roughly 1 hour with an Nvidia GeForce 10 series graphics card, and the postprocessing will take about 5 minutes.
 

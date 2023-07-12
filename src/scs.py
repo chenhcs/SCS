@@ -14,7 +14,7 @@ def segment_cells(bin_file, image_file, prealigned=False, align=None, patch_size
         n_neighbor - int, the number of nearest neighbors who will be considered when make predictions for one spot in the transformer model, default 50
         epochs - int, the training epochs of the transformer model, default 100
         r_estimate - int, the estimated radius (spots) of cells, used to calculate the priors for transformer predictions, default 15
-        val_ratio - float, the ratio of the patch set aside for validation, default 0
+        val_ratio - float, the fraction of the patch set aside for validation, default 0
     """
     if patch_size == 0:
         preprocessing.preprocess(bin_file, image_file, prealigned, align, 0, 0, patch_size, bin_size, n_neighbor)

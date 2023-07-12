@@ -6,6 +6,7 @@ import tensorflow_addons as tfa
 import gc
 from tensorflow.keras.layers.experimental import preprocessing
 import os
+import anndata as ad
 
 def dir_to_class(y_dir, class_num):
     y_dir_class = []
@@ -174,7 +175,7 @@ def run_experiment(startx, starty, patchsize, model, x_train, x_train_pos, x_tra
 
     return
 
-def train(startx, starty, patchsize, epochs):
+def train(startx, starty, patchsize, epochs, val_ratio):
     startx = str(startx)
     starty = str(starty)
     patchsize = str(patchsize)
@@ -198,8 +199,9 @@ def train(startx, starty, patchsize, epochs):
 
     x_train_select = []
     x_validation_select = []
+    adata = ad.read_h5ad('data/spots' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.h5ad')
     for i in range(len(x_train_pos_)):
-        if x_train_pos_[i][0][0] > 900 and x_train_pos_[i][0][1] > 900:
+        if x_train_pos_[i][0][0] > int(adata.X.shape[0] * (1 - np.sqrt(val_ratio))) and x_train_pos_[i][0][1] > int(adata.X.shape[1] * (1 - np.sqrt(val_ratio))):
             x_validation_select.append(i)
         else:
             x_train_select.append(i)

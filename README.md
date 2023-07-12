@@ -114,3 +114,12 @@ Ziv Bar-Joseph: zivbj at andrew.cmu.edu</br>
 
 ## License
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Citation
+If you find SCS is useful for your research, please cite the following paper:
+
+```
+Chen, H., Li, D. & Bar-Joseph, Z.
+SCS: cell segmentation for high-resolution spatial transcriptomics.
+Nat Methods (2023). https://doi.org/10.1038/s41592-023-01939-3
+```

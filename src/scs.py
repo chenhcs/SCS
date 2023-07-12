@@ -2,7 +2,7 @@ import math
 import numpy as np
 from src import preprocessing, transformer, postprocessing
 
-def segment_cells(bin_file, image_file, prealigned=False, align=None, patch_size=0, bin_size=3, n_neighbor=50, epochs=100, r_estimate=15):
+def segment_cells(bin_file, image_file, prealigned=False, align=None, patch_size=0, bin_size=3, n_neighbor=50, epochs=100, r_estimate=15, val_ratio=0.0):
     """
     Parameters:
         bin_file - string, tsv file for detected RNAs
@@ -14,10 +14,11 @@ def segment_cells(bin_file, image_file, prealigned=False, align=None, patch_size
         n_neighbor - int, the number of nearest neighbors who will be considered when make predictions for one spot in the transformer model, default 50
         epochs - int, the training epochs of the transformer model, default 100
         r_estimate - int, the estimated radius (spots) of cells, used to calculate the priors for transformer predictions, default 15
+        val_ratio - float, the ratio of the patch set aside for validation, default 0
     """
     if patch_size == 0:
         preprocessing.preprocess(bin_file, image_file, prealigned, align, 0, 0, patch_size, bin_size, n_neighbor)
-        transformer.train(0, 0, patch_size, epochs)
+        transformer.train(0, 0, patch_size, epochs, val_ratio)
         postprocessing.postprocess(0, 0, patch_size, bin_size, r_estimate)
     else:
         r_all = []
@@ -37,7 +38,7 @@ def segment_cells(bin_file, image_file, prealigned=False, align=None, patch_size
                 try:
                     print('Processing the patch ' + str(startr) + ':' + str(startc) + '...')
                     preprocessing.preprocess(bin_file, image_file, prealigned, align, startr, startc, patch_size, bin_size, n_neighbor)
-                    transformer.train(startr, startc, patch_size, epochs)
+                    transformer.train(startr, startc, patch_size, epochs, val_ratio)
                     postprocessing.postprocess(startr, startc, patch_size, bin_size, r_estimate)
                 except Exception as e:
                     print(e)

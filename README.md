@@ -92,7 +92,7 @@ python seqscope.py
 ## Output
 Results will be saved to `results` directory.
 
-The output file `stain_mask.png` visualizes cell boundaries in the sequencing section.
+The output file `cell_masks.png` visualizes cell boundaries in the sequencing section.
 
 The output file `spot2cell.txt` contains the mapping from spot coordinates to cell indexes.
 

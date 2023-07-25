@@ -33,20 +33,20 @@ def preprocess(bin_file, image_file, prealigned, align, startx, starty, patchsiz
     if align:
         st.cs.refine_alignment(adatasub, mode=align, transform_layers=['stain'])
 
-    fig, axes = plt.subplots(ncols=2, figsize=(16, 8), tight_layout=True)
-    axes[0].imshow(before)
-    st.pl.imshow(adatasub, 'unspliced', ax=axes[0], alpha=0.6, cmap='Reds', vmax=10, use_scale=False, save_show_or_return='return')
-    axes[0].set_title('before alignment')
-    st.pl.imshow(adatasub, 'stain', ax=axes[1], use_scale=False, save_show_or_return='return')
-    st.pl.imshow(adatasub, 'unspliced', ax=axes[1], alpha=0.6, cmap='Reds', vmax=10, use_scale=False, save_show_or_return='return')
-    axes[1].set_title('after alignment')
+        fig, axes = plt.subplots(ncols=2, figsize=(16, 8), tight_layout=True)
+        axes[0].imshow(before)
+        st.pl.imshow(adatasub, 'unspliced', ax=axes[0], alpha=0.6, cmap='Reds', vmax=10, use_scale=False, save_show_or_return='return')
+        axes[0].set_title('before alignment')
+        st.pl.imshow(adatasub, 'stain', ax=axes[1], use_scale=False, save_show_or_return='return')
+        st.pl.imshow(adatasub, 'unspliced', ax=axes[1], alpha=0.6, cmap='Reds', vmax=10, use_scale=False, save_show_or_return='return')
+        axes[1].set_title('after alignment')
+    
+        try:
+            os.mkdir('fig/')
+        except FileExistsError:
+            print('fig folder exists')
 
-    try:
-        os.mkdir('fig/')
-    except FileExistsError:
-        print('fig folder exists')
-
-    plt.savefig('fig/alignment' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.png')
+        plt.savefig('fig/alignment' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.png')
 
     #nucleus segmentation from staining image
     fig, ax = plt.subplots(figsize=(8, 8), tight_layout=True)

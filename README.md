@@ -104,6 +104,15 @@ where `row:column` is the coordinate of one spot indicating which row and column
 
 A statistical summary for the segmented cells `cell_stats.txt`, including the number of cells identified and cell size statistics, will be saved to the `results` directory.
 
+## Output
+Run the following script for an example of comparing SCS segmentation with Watershed segmentation:
+```
+python evaluation.py data/Mouse_brain_Adult_GEM_bin1.tsv 5700 5700 1200 results/spot2nucl_5700:5700:1200:1200.txt results/spot2cell_SCS_5700:5700:1200:1200.txt results/spot2cell_watershed_5700:5700:1200:1200.txt
+```
+The script takes seven input: (*i*) gene counts of spots, (*ii*) row start index of the patch, (*iii*) column start index of the patch, (*iv*) patch size, (*v*) nucleus segmentation, *i.e.*, mapping from spots to nuclei, (*vi*) cell segmentation of method 1, *i.e.*, mapping from spots to cells, and (*vii*) cell segmentation of method 2, *i.e.*, mapping from spots to cells.
+
+The Pearson correlation statistics will be printed, and a boxplot summarizing the correlations will be saved in the `results` folder.
+
 ## Credits
 The software is an implementation of the method SCS, jointly developed by Hao Chen, Dongshunyi Li, and Ziv Bar-Joseph from the [System Biology Group @ Carnegie Mellon University](http://sb.cs.cmu.edu/).
 

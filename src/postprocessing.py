@@ -465,6 +465,14 @@ def postprocess(startx, starty, patchsize, bin_size, dia_estimate):
                 fw.write(str(i) + ':' + str(j) + '\t' + str(merged[i, j]) + '\n')
     fw.close()
 
+    nucl_labels = adata.layers['watershed_labels']
+    fw = open('results/spot2nucl_' + startx + ':' + starty + ':' + patchsize + ':' + patchsize + '.txt', 'w')
+    for i in range(nucl_labels.shape[0]):
+        for j in range(nucl_labels.shape[1]):
+            if nucl_labels[i, j] > 0:
+                fw.write(str(i) + ':' + str(j) + '\t' + str(nucl_labels[i, j]) + '\n')
+    fw.close()
+
     result_stats(merged, startx, starty, patchsize)
 
     idx = np.where(merged == 0)

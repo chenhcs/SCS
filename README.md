@@ -104,7 +104,7 @@ where `row:column` is the coordinate of one spot indicating which row and column
 
 A statistical summary for the segmented cells `cell_stats.txt`, including the number of cells identified and cell size statistics, will be saved to the `results` directory.
 
-## Output
+## Evaluation
 Run the following script for an example of comparing SCS segmentation with Watershed segmentation:
 ```
 python evaluation.py data/Mouse_brain_Adult_GEM_bin1.tsv 5700 5700 1200 results/spot2nucl_5700:5700:1200:1200.txt results/spot2cell_SCS_5700:5700:1200:1200.txt results/spot2cell_watershed_5700:5700:1200:1200.txt

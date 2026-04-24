@@ -10,7 +10,7 @@ import os
 from scipy.sparse import lil_matrix, csr_matrix, vstack
 
 
-def preprocess(bin_file, image_file, prealigned, align, startx, starty, patchsize, bin_size, n_neighbor):
+def preprocess(bin_file, image_file, prealigned, align, startx, starty, patchsize, bin_size, n_neighbor, stain_bg_threshold=10, stain_bg_percentile=None):
     #read data
     if prealigned:
         adatasub = st.io.read_bgi_agg(bin_file, image_file, prealigned=True)
@@ -27,6 +27,12 @@ def preprocess(bin_file, image_file, prealigned, align, startx, starty, patchsiz
     adatasub.layers['unspliced'] = adatasub.X
     patchsizex = adatasub.X.shape[0]
     patchsizey = adatasub.X.shape[1]
+
+    if stain_bg_percentile is not None:
+        stain_bg_threshold = float(np.percentile(np.asarray(adatasub.layers['stain']), stain_bg_percentile))
+        print(f'stain_bg_threshold ({stain_bg_percentile}th percentile):', stain_bg_threshold)
+    else:
+        print('stain_bg_threshold:', stain_bg_threshold)
 
     #align staining image with bins
     before = adatasub.layers['stain'].copy()
@@ -230,7 +236,7 @@ def preprocess(bin_file, image_file, prealigned, align, startx, starty, patchsiz
                 if idx >= 0 and idx < all_exp_merged_bins.shape[0] and np.sum(all_exp_merged_bins[idx, :]) > 0:
                     backgroud = True
                     for nucleus in watershed2center:
-                        if (i - watershed2center[nucleus][0]) ** 2 + (j - watershed2center[nucleus][1]) ** 2 <= 900 or adatasub.layers['stain'][i, j] > 10:
+                        if (i - watershed2center[nucleus][0]) ** 2 + (j - watershed2center[nucleus][1]) ** 2 <= 900 or adatasub.layers['stain'][i, j] > stain_bg_threshold:
                             backgroud = False
                             break
                     if backgroud:

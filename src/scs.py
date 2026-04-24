@@ -2,7 +2,7 @@ import math
 import numpy as np
 from src import preprocessing, transformer, postprocessing
 
-def segment_cells(bin_file, image_file, prealigned=False, align=None, patch_size=0, bin_size=3, n_neighbor=50, epochs=100, r_estimate=15, val_ratio=0.0625):
+def segment_cells(bin_file, image_file, prealigned=False, align=None, patch_size=0, bin_size=3, n_neighbor=50, epochs=100, r_estimate=15, val_ratio=0.0625, stain_bg_threshold=10, stain_bg_percentile=None):
     """
     Parameters:
         bin_file - string, tsv file for detected RNAs
@@ -15,9 +15,11 @@ def segment_cells(bin_file, image_file, prealigned=False, align=None, patch_size
         epochs - int, the training epochs of the transformer model, default 100
         r_estimate - int, the estimated radius (spots) of cells, used to calculate the priors for transformer predictions, default 15
         val_ratio - float, the fraction of the patch set aside for validation, default 0.0625 (1/4 height x 1/4 width)
+        stain_bg_threshold - float, absolute stain intensity threshold; a spot is background only if its stain value is at or below this value, default 10
+        stain_bg_percentile - float or None, if set (e.g. 10.0), overrides stain_bg_threshold with the given percentile of the stain layer computed at runtime; useful for Visium H&E data where pixel values are in the 0-255 range, default None
     """
     if patch_size == 0:
-        preprocessing.preprocess(bin_file, image_file, prealigned, align, 0, 0, patch_size, bin_size, n_neighbor)
+        preprocessing.preprocess(bin_file, image_file, prealigned, align, 0, 0, patch_size, bin_size, n_neighbor, stain_bg_threshold, stain_bg_percentile)
         transformer.train(0, 0, patch_size, epochs, val_ratio)
         postprocessing.postprocess(0, 0, patch_size, bin_size, r_estimate)
     else:
@@ -37,7 +39,7 @@ def segment_cells(bin_file, image_file, prealigned=False, align=None, patch_size
             for startc in range(0, cmax, patch_size):
                 try:
                     print('Processing the patch ' + str(startr) + ':' + str(startc) + '...')
-                    preprocessing.preprocess(bin_file, image_file, prealigned, align, startr, startc, patch_size, bin_size, n_neighbor)
+                    preprocessing.preprocess(bin_file, image_file, prealigned, align, startr, startc, patch_size, bin_size, n_neighbor, stain_bg_threshold, stain_bg_percentile)
                     transformer.train(startr, startc, patch_size, epochs, val_ratio)
                     postprocessing.postprocess(startr, startc, patch_size, bin_size, r_estimate)
                 except Exception as e:
